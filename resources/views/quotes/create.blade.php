@@ -2,9 +2,26 @@
 
 @push('head_scripts')
 <script>
-// Initialize variables and functions in the global scope
+// Initialize variables in the global scope
 window.itemCount = 0;
 window.serviceTemplates = {!! json_encode($serviceTemplates) !!};
+window.currentLang = 'en'; // Default language
+
+window.toggleLanguage = function() {
+    window.currentLang = window.currentLang === 'en' ? 'ar' : 'en';
+    const btn = document.getElementById('langToggleBtn');
+    btn.innerHTML = `<i class="fas fa-language me-2"></i>${window.currentLang === 'en' ? 'عربي' : 'English'}`;
+    
+    // Update template modal content
+    const templates = document.querySelectorAll('.template-card');
+    templates.forEach(card => {
+        const template = window.serviceTemplates.find(t => t.id === parseInt(card.dataset.templateId));
+        if (template) {
+            card.querySelector('.template-name').textContent = template[`name_${window.currentLang}`];
+            card.querySelector('.template-description').textContent = template[`description_${window.currentLang}`];
+        }
+    });
+};
 
 window.addCustomService = function() {
     window.addQuoteItem();
@@ -18,9 +35,9 @@ window.addTemplateService = function(templateId) {
     document.querySelector('input[name="currency"]').value = template.currency;
     
     window.addQuoteItem({
-        service_name: template.name_ar,
-        description: template.description_ar,
-        details: template.details_ar,
+        service_name: template[`name_${window.currentLang}`],
+        description: template[`description_${window.currentLang}`],
+        details: template[`details_${window.currentLang}`],
         icon: template.icon,
         unit_price: template.default_price,
         quantity: 1,
@@ -169,212 +186,237 @@ document.addEventListener('DOMContentLoaded', function() {
 
 @section('content')
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-white py-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h1 class="h3 mb-0 text-primary">Create Quote</h1>
-                        <a href="{{ route('quotes.index') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>Back to List
-                        </a>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('quotes.store') }}" method="POST" id="quoteForm">
-                        @csrf
-                        
-                        @if ($errors->any())
-                            <div class="col-12">
-                                <div class="alert alert-danger">
-                                    <ul class="mb-0">
-                                        @foreach ($errors->all() as $error)
-                                            <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            </div>
-                        @endif
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 text-primary mb-0">Create New Quote</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ route('quotes.index') }}" class="text-decoration-none">Quotes</a></li>
+                    <li class="breadcrumb-item active">Create</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <button type="button" id="langToggleBtn" class="btn btn-outline-secondary me-2" onclick="toggleLanguage()">
+                <i class="fas fa-language me-2"></i>عربي
+            </button>
+            <a href="{{ route('quotes.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Quotes
+            </a>
+        </div>
+    </div>
 
-                        <!-- Basic Info -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label fw-medium">Customer</label>
+    <form action="{{ route('quotes.store') }}" method="POST" id="quoteForm">
+        @csrf
+        
+        <div class="row g-4">
+            <!-- Left Column - Main Content -->
+            <div class="col-lg-8">
+                <!-- Quote Details Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">Quote Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <!-- Quote Number -->
+                            <div class="col-sm-6 col-md-4">
+                                <label class="form-label small text-muted">Quote Number</label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light">
-                                        <i class="fas fa-user text-muted"></i>
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="fas fa-hashtag text-muted"></i>
                                     </span>
-                                    <select name="customer_id" class="form-select @error('customer_id') is-invalid @enderror" required>
-                                        <option value="">Select Customer</option>
-                                        @foreach($customers as $customer)
-                                            <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
-                                                {{ $customer->customer_type === 'individual' 
-                                                    ? $customer->first_name . ' ' . $customer->last_name 
-                                                    : $customer->company_name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('customer_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <input type="text" name="quote_number" class="form-control border-start-0 ps-0" 
+                                        value="{{ $nextQuoteNumber }}" readonly>
                                 </div>
+                                <small class="text-muted">Auto-generated quote number</small>
                             </div>
-                            
-                            <div class="col-md-3">
-                                <label class="form-label fw-medium">Quote Date</label>
+
+                            <!-- Quote Date -->
+                            <div class="col-sm-6 col-md-4">
+                                <label class="form-label small text-muted">Quote Date</label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light">
+                                    <span class="input-group-text bg-light border-end-0">
                                         <i class="fas fa-calendar text-muted"></i>
                                     </span>
-                                    <input type="date" name="quote_date" class="form-control @error('quote_date') is-invalid @enderror" 
-                                        value="{{ old('quote_date', date('Y-m-d')) }}" required>
+                                    <input type="date" name="quote_date" class="form-control border-start-0 ps-0 @error('quote_date') is-invalid @enderror"
+                                        value="{{ old('quote_date', now()->format('Y-m-d')) }}" required>
                                     @error('quote_date')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
 
-                            <div class="col-md-3">
-                                <label class="form-label fw-medium">Valid Until</label>
+                            <!-- Valid Until -->
+                            <div class="col-sm-6 col-md-4">
+                                <label class="form-label small text-muted">Valid Until</label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light">
-                                        <i class="fas fa-hourglass-end text-muted"></i>
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="fas fa-calendar-alt text-muted"></i>
                                     </span>
-                                    <input type="date" name="valid_until" class="form-control @error('valid_until') is-invalid @enderror" 
-                                        value="{{ old('valid_until') }}">
+                                    <input type="date" name="valid_until" class="form-control border-start-0 ps-0 @error('valid_until') is-invalid @enderror"
+                                        value="{{ old('valid_until', now()->addDays(30)->format('Y-m-d')) }}">
                                     @error('valid_until')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
-                            
-                            <input type="hidden" name="currency" value="EGP">
-                        </div>
 
-                        <!-- Items -->
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h2 class="h5 mb-0">الخدمات</h2>
-                                <div>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary me-2" id="add-custom-service">
-                                        <i class="fas fa-plus me-1"></i>خدمة مخصصة
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#serviceTemplateModal">
-                                        <i class="fas fa-list me-1"></i>إضافة من القوالب
-                                    </button>
+                            <!-- Currency -->
+                            <div class="col-sm-6 col-md-4">
+                                <label class="form-label small text-muted">Currency</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="fas fa-dollar-sign text-muted"></i>
+                                    </span>
+                                    <input type="hidden" name="currency" value="{{ old('currency', 'EGP') }}" class="form-control border-start-0 ps-0 @error('currency') is-invalid @enderror" required>
+                                    <div class="form-control border-start-0 ps-0">
+                                        <span class="currency-display">{{ old('currency', 'EGP') }}</span>
+                                    </div>
+                                    @error('currency')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
-
-                            <div id="quote-items">
-                                <!-- Items will be added here -->
-                            </div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Notes -->
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h2 class="h5 mb-0">الملاحظات</h2>
-                                <button type="button" class="btn btn-sm btn-outline-primary" id="add-default-notes">
-                                    <i class="fas fa-plus me-1"></i>إضافة الملاحظات الافتراضية
+                <!-- Quote Items Card -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Quote Items</h5>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="addCustomService()">
+                                    <i class="fas fa-plus me-2"></i>Add Custom Service
+                                </button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#serviceTemplateModal">
+                                    <i class="fas fa-list me-2"></i>From Templates
                                 </button>
                             </div>
-                            <textarea name="notes" id="notes" class="form-control" rows="5" dir="rtl"
-                                placeholder="أدخل الملاحظات هنا..."></textarea>
                         </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="quote-items" class="p-4"></div>
+                    </div>
+                </div>
+            </div>
 
-                        <!-- Service Template Modal -->
-                        <div class="modal fade" id="serviceTemplateModal" tabindex="-1">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">إضافة خدمة من القوالب</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="row g-4">
-                                            @foreach($serviceTemplates as $template)
-                                                <div class="col-md-6">
-                                                    <div class="card h-100">
-                                                        <div class="card-body">
-                                                            <div class="d-flex align-items-center mb-3">
-                                                                @if($template->icon)
-                                                                    <i class="{{ $template->icon }} fa-2x text-primary me-3"></i>
-                                                                @endif
-                                                                <div>
-                                                                    <h3 class="h6 mb-1">{{ $template->name_ar }}</h3>
-                                                                    <div class="small text-muted">
-                                                                        {{ $template->currency }} {{ number_format($template->default_price, 2) }}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
+            <!-- Right Column - Customer & Summary -->
+            <div class="col-lg-4">
+                <!-- Customer Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">Customer Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Select Customer</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="fas fa-user text-muted"></i>
+                                </span>
+                                <select name="customer_id" class="form-select border-start-0 ps-0 @error('customer_id') is-invalid @enderror" required>
+                                    <option value="">Choose a customer</option>
+                                    @foreach($customers as $customer)
+                                        <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
+                                            {{ $customer->customer_type === 'company' ? $customer->company_name : $customer->first_name . ' ' . $customer->last_name }}
+                                            @if($customer->customer_type === 'company' && $customer->contact_person_name)
+                                                ({{ $customer->contact_person_name }})
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('customer_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                                                            @if($template->description_ar)
-                                                                <p class="mb-3">{{ $template->description_ar }}</p>
-                                                            @endif
-
-                                                            @if(!empty($template->details_ar))
-                                                                <ul class="mb-3">
-                                                                    @foreach($template->details_ar as $detail)
-                                                                        <li>{{ $detail }}</li>
-                                                                    @endforeach
-                                                                </ul>
-                                                            @endif
-
-                                                            <button type="button" class="btn btn-sm btn-outline-primary w-100 add-template"
-                                                                data-template-id="{{ $template->id }}">
-                                                                <i class="fas fa-plus me-1"></i>إضافة
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                </div>
+                <!-- Quote Summary Card -->
+                <div class="card shadow-sm bg-light">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">Quote Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Subtotal</span>
+                            <div>
+                                <span id="subtotal">0.00</span>
+                                <span class="ms-1 text-muted currency-display">{{ old('currency', 'EGP') }}</span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">VAT (14%)</span>
+                            <div>
+                                <span id="vat-amount">0.00</span>
+                                <span class="ms-1 text-muted currency-display">{{ old('currency', 'EGP') }}</span>
+                            </div>
+                        </div>
+                        <hr class="my-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="h6 mb-0">Total</span>
+                            <div class="h6 mb-0">
+                                <span id="total-amount">0.00</span>
+                                <span class="ms-1 currency-display">{{ old('currency', 'EGP') }}</span>
                             </div>
                         </div>
 
-                        <!-- Terms -->
-                        <div class="mb-4">
-                            <h2 class="h5 mb-3">Terms & Conditions</h2>
-                            @foreach($defaultTerms as $term)
-                                <div class="form-check mb-2">
-                                    <input type="checkbox" name="terms[]" value="{{ $term->id }}" 
-                                        class="form-check-input" id="term{{ $term->id }}"
-                                        {{ in_array($term->id, old('terms', [])) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="term{{ $term->id }}">
-                                        {{ $term->title }}
-                                    </label>
-                                </div>
-                            @endforeach
-                        </div>
-
-                        <!-- Summary -->
-                        <div class="mb-4">
-                            <h2 class="h5 mb-3">Summary</h2>
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label small text-muted">Subtotal</label>
-                                    <input type="text" id="subtotal" class="form-control" readonly>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label small text-muted">VAT Amount (14%)</label>
-                                    <input type="text" id="vat-amount" class="form-control" readonly>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label small text-muted">Total</label>
-                                    <input type="text" id="total-amount" class="form-control" readonly>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-4">
+                        <!-- Action Buttons -->
+                        <div class="mt-4 d-grid gap-2">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save me-2"></i>Create Quote
                             </button>
-                            <a href="{{ route('quotes.index') }}" class="btn btn-outline-secondary">Cancel</a>
+                            <a href="{{ route('quotes.index') }}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
                         </div>
-                    </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Service Templates Modal -->
+<div class="modal fade" id="serviceTemplateModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Service from Templates</h5>
+                <div>
+                    <button type="button" id="langToggleBtn" class="btn btn-outline-secondary me-2" onclick="toggleLanguage()">
+                        <i class="fas fa-language me-2"></i>عربي
+                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="row g-4">
+                    @foreach($serviceTemplates as $template)
+                    <div class="col-md-6">
+                        <div class="card h-100 template-card" data-template-id="{{ $template->id }}">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="{{ $template->icon }} fa-2x me-3 text-primary"></i>
+                                    <h3 class="h6 mb-0 template-name">{{ $template->name_en }}</h3>
+                                </div>
+                                <p class="small text-muted mb-3 template-description">{{ $template->description_en }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold">{{ number_format($template->default_price, 2) }} {{ $template->currency }}</span>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                                        onclick="addTemplateService({{ $template->id }})">
+                                        <i class="fas fa-plus me-2"></i>Add Service
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
                 </div>
             </div>
         </div>

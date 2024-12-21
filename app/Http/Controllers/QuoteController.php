@@ -26,8 +26,9 @@ class QuoteController extends Controller
         $defaultTerms = QuoteTerm::getDefaults();
         $serviceTemplates = ServiceTemplate::where('is_active', true)->get();
         $defaultNotes = QuoteDefaultNote::getDefaults();
+        $nextQuoteNumber = Quote::generateQuoteNumber();
         
-        return view('quotes.create', compact('customers', 'defaultTerms', 'serviceTemplates', 'defaultNotes'));
+        return view('quotes.create', compact('customers', 'defaultTerms', 'serviceTemplates', 'defaultNotes', 'nextQuoteNumber'));
     }
 
     public function store(Request $request)
