@@ -281,7 +281,7 @@
         }
 
         .company-details {
-            font-size: 0.95rem;
+            font-size: 0.90rem;
             color: var(--secondary-color);
         }
 
@@ -330,6 +330,7 @@
             flex-wrap: wrap;
             gap: 0.5rem 1rem;
             margin-bottom: 0.5rem;
+            justify-content: flex-end;
         }
 
         .contact-info span {
@@ -412,6 +413,7 @@
                 </div>
                 <div class="col-6 text-end company-details">
                     <h4 data-lang data-lang-en="Bonline Co." data-lang-ar="بونلاين">Bonline Co.</h4>
+                    <p class="mb-1" data-lang data-lang-en="A Khabeertech Company" data-lang-ar="شركة خبير تك">Khabeertech Software</p>
                     <p class="mb-2" data-lang data-lang-en="12 Hassan Alshref Nasir City, Cairo, Egypt 11725" data-lang-ar="12 شارع حسن الشريف، مدينة نصر، القاهرة، مصر 11725">
                         12 Hassan Alshref Nasir City, Cairo, Egypt 11725
                     </p>
@@ -421,7 +423,7 @@
                         </span>
                         <span class="divider">|</span>
                         <span>
-                            <span data-lang data-lang-en="Email" data-lang-ar="بريد إلكتروني">Email</span>: info@itc-4u.com
+                            <span data-lang data-lang-en="Email" data-lang-ar="بريد إلكتروني">Email</span>: info@bonlineco.com
                         </span>
                     </div>
                     <div>
