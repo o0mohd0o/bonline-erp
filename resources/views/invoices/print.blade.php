@@ -29,110 +29,110 @@
         /* Print-specific styles */
         @media print {
             /* Hide print button */
-            .no-print { 
-                display: none !important; 
+            .no-print {
+                display: none !important;
             }
-            
+
             /* Reset page margins */
             @page {
                 margin: 0.5cm;
                 size: A4;
             }
-            
+
             /* Optimize spacing */
             .container {
                 margin: 0 !important;
                 padding: 10px !important;
             }
-            
+
             .mb-4 {
                 margin-bottom: 0.75rem !important;
             }
-            
+
             .p-3 {
                 padding: 0.5rem !important;
             }
-            
+
             /* Reduce font sizes */
             body {
                 font-size: 14px;
                 line-height: 1.4;
             }
-            
+
             .small {
                 font-size: 80% !important;
             }
-            
+
             h4 {
                 font-size: 1.2rem !important;
             }
-            
+
             h6 {
                 font-size: 1rem !important;
                 margin-bottom: 0.5rem !important;
             }
-            
+
             /* Optimize table */
             .table {
                 margin-bottom: 0.5rem !important;
             }
-            
+
             .table td, .table th {
                 padding: 0.25rem !important;
             }
-            
+
             /* Ensure content fits on one page */
             .row {
                 break-inside: avoid;
             }
-            
+
             .table-responsive {
                 break-inside: avoid;
             }
-            
+
             /* Force background colors */
             .bg-light {
                 background-color: #f8f9fa !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
-            
+
             /* Ensure text is readable when printed */
-            .text-muted { 
-                color: #666 !important; 
+            .text-muted {
+                color: #666 !important;
             }
-            
+
             /* Ensure the page doesn't break in awkward places */
-            .row, .table-responsive, .col-6 { 
-                break-inside: avoid; 
+            .row, .table-responsive, .col-6 {
+                break-inside: avoid;
             }
-            
+
             /* Reduce some spacing for print */
-            .mb-4 { 
-                margin-bottom: 1rem !important; 
+            .mb-4 {
+                margin-bottom: 1rem !important;
             }
-            .p-3 { 
-                padding: 0.75rem !important; 
+            .p-3 {
+                padding: 0.75rem !important;
             }
-            
+
             /* Ensure text is readable when printed */
-            .text-muted { 
-                color: #666 !important; 
+            .text-muted {
+                color: #666 !important;
             }
-            .small { 
-                font-size: 85% !important; 
+            .small {
+                font-size: 85% !important;
             }
-            
+
             /* Force background colors to print */
-            .bg-light { 
-                background-color: #f8f9fa !important; 
-                -webkit-print-color-adjust: exact; 
-                print-color-adjust: exact; 
+            .bg-light {
+                background-color: #f8f9fa !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
-            .table-light { 
-                background-color: #f8f9fa !important; 
-                -webkit-print-color-adjust: exact; 
-                print-color-adjust: exact; 
+            .table-light {
+                background-color: #f8f9fa !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
         }
     </style>
@@ -231,7 +231,7 @@
                         <div class="text-muted small">Contact</div>
                         <div class="fw-medium">
                             Phone: +201008985681<br>
-                            Email: sales@bonline.cc
+                            Email: sales@bonlineco.com
                         </div>
                     </div>
                     <div>

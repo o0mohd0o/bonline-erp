@@ -12,7 +12,7 @@ return [
 
     'name' => 'Bonline',
     'phone' => '+201008985681',
-    'email' => 'sales@bonline.cc',
+    'email' => 'sales@bonlineco.com',
     'address' => 'Cairo, Egypt',
     'commercial_register' => '397806',
     'tax_number' => '450-399-869',

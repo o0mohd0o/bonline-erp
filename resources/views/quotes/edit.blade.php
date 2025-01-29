@@ -61,6 +61,23 @@ window.addQuoteItem = function(data = null) {
     if (!container) return;
 
     const selectedCurrency = document.querySelector('input[name="currency"]').value;
+    
+    // Helper function to escape HTML
+    const escapeHtml = (unsafe) => {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    };
+
+    // Helper function to safely get value
+    const safeValue = (value) => {
+        if (value === null || value === undefined) return '';
+        return escapeHtml(String(value));
+    };
+
     const itemHtml = `
         <div class="card shadow-sm border mb-3 item-card" id="item-${window.itemCount}">
             <div class="card-body">
@@ -74,11 +91,11 @@ window.addQuoteItem = function(data = null) {
                     <div class="col-md-6">
                         <label class="form-label small text-muted">Service Name</label>
                         <input type="text" name="items[${window.itemCount}][service_name]" class="form-control" 
-                            value="${data ? data.service_name : ''}" required dir="rtl">
-                        ${data && data.service_template_id ? `
-                            <input type="hidden" name="items[${window.itemCount}][service_template_id]" value="${data.service_template_id}">
+                            value="${safeValue(data?.service_name)}" required dir="rtl">
+                        ${data?.service_template_id ? `
+                            <input type="hidden" name="items[${window.itemCount}][service_template_id]" value="${safeValue(data.service_template_id)}">
                         ` : ''}
-                        ${data && data.is_vat_free ? `
+                        ${data?.is_vat_free ? `
                             <div class="text-success small mt-1">
                                 <i class="fas fa-check-circle"></i> VAT Free Service
                             </div>
@@ -87,34 +104,34 @@ window.addQuoteItem = function(data = null) {
                     <div class="col-md-6">
                         <label class="form-label small text-muted">Icon (FontAwesome)</label>
                         <input type="text" name="items[${window.itemCount}][icon]" class="form-control" 
-                            value="${data ? data.icon : ''}" placeholder="fas fa-server" dir="ltr">
+                            value="${safeValue(data?.icon)}" placeholder="fas fa-server" dir="ltr">
                     </div>
                     <div class="col-12">
                         <label class="form-label small text-muted">Description</label>
                         <textarea name="items[${window.itemCount}][description]" class="form-control" rows="2" 
-                            dir="rtl">${data ? data.description : ''}</textarea>
+                            dir="rtl">${safeValue(data?.description)}</textarea>
                     </div>
                     <div class="col-12">
                         <label class="form-label small text-muted">Details (One per line)</label>
                         <textarea name="items[${window.itemCount}][details]" class="form-control" rows="3"
-                            dir="rtl" placeholder="Enter details, one per line">${data && data.details ? data.details.join('\n') : ''}</textarea>
+                            dir="rtl" placeholder="Enter details, one per line">${data?.details ? (Array.isArray(data.details) ? data.details.join('\n') : data.details) : ''}</textarea>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label small text-muted">Quantity</label>
                         <input type="number" name="items[${window.itemCount}][quantity]" class="form-control quantity-input" 
-                            value="${data ? data.quantity : '1'}" min="1" required>
+                            value="${safeValue(data?.quantity || '1')}" min="1" required>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label small text-muted">Unit Price (${selectedCurrency})</label>
                         <input type="number" name="items[${window.itemCount}][unit_price]" class="form-control price-input" 
-                            value="${data ? data.unit_price : ''}" step="0.01" min="0" required>
+                            value="${safeValue(data?.unit_price)}" step="0.01" min="0" required>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label small text-muted">Total (${selectedCurrency})</label>
                         <input type="text" class="form-control total-input" readonly>
                     </div>
                 </div>
-                ${data && data.is_vat_free ? `<input type="hidden" class="is-vat-free" value="1">` : ''}
+                ${data?.is_vat_free ? `<input type="hidden" class="is-vat-free" value="1">` : ''}
             </div>
         </div>
     `;
@@ -153,11 +170,26 @@ window.updateTotals = function() {
         }
     });
 
+    // Calculate discount
+    const discountAmount = parseFloat(document.getElementById('discount_amount').value) || 0;
+    const discountPercentage = parseFloat(document.getElementById('discount_percentage').value) || 0;
+    let totalDiscount = discountAmount;
+    
+    if (discountPercentage > 0) {
+        totalDiscount = subtotal * (discountPercentage / 100);
+    }
+
+    // Apply discount to vatable amount proportionally
+    if (subtotal > 0) {
+        vatableAmount = vatableAmount * ((subtotal - totalDiscount) / subtotal);
+    }
+
     // Update summary
     const vatAmount = vatableAmount * (vatRate / 100);
-    const total = subtotal + vatAmount;
+    const total = subtotal - totalDiscount + vatAmount;
 
     document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+    document.getElementById('discount-amount-display').textContent = totalDiscount.toFixed(2);
     document.getElementById('vat-amount').textContent = vatAmount.toFixed(2);
     document.getElementById('total-amount').textContent = total.toFixed(2);
 
@@ -176,23 +208,46 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Set initial currency value and add existing items
-    const defaultCurrency = '{{ $quote->currency }}';
-    document.querySelector('input[name="currency"]').value = defaultCurrency;
-    
-    // Add existing items
-    @foreach($quote->items as $index => $item)
-        window.addQuoteItem({
-            service_name: {!! json_encode($item->service_name) !!},
-            description: {!! json_encode($item->description) !!},
-            details: {!! json_encode($item->details) !!},
-            icon: {!! json_encode($item->icon) !!},
-            quantity: {{ $item->quantity }},
-            unit_price: {{ $item->unit_price }},
-            service_template_id: {{ $item->service_template_id ?? 'null' }},
-            is_vat_free: {{ $item->is_vat_free ? 'true' : 'false' }}
+    // Handle discount input changes
+    const discountAmount = document.getElementById('discount_amount');
+    const discountPercentage = document.getElementById('discount_percentage');
+
+    if (discountAmount) {
+        discountAmount.addEventListener('input', function() {
+            if (this.value && discountPercentage) {
+                discountPercentage.value = '';
+            }
+            updateTotals();
         });
-    @endforeach
+    }
+
+    if (discountPercentage) {
+        discountPercentage.addEventListener('input', function() {
+            if (this.value && discountAmount) {
+                discountAmount.value = '';
+            }
+            updateTotals();
+        });
+    }
+
+    // Set initial currency value
+    const defaultCurrency = '{{ old('currency', $quote->currency) }}';
+    document.querySelector('input[name="currency"]').value = defaultCurrency;
+
+    // Load existing quote items
+    const existingItems = {!! json_encode($quote->items) !!};
+    existingItems.forEach(item => {
+        window.addQuoteItem({
+            service_name: item.service_name,
+            description: item.description,
+            details: item.details,
+            icon: item.icon,
+            unit_price: item.unit_price,
+            quantity: item.quantity,
+            service_template_id: item.service_template_id,
+            is_vat_free: item.is_vat_free
+        });
+    });
 
     updateTotals();
 });
@@ -250,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
 
                             <!-- Quote Date -->
-                            <div class="col-sm-6 col-md-4">
+                            <div class="col-md-6">
                                 <label class="form-label small text-muted">Quote Date</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-end-0">
@@ -265,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
 
                             <!-- Valid Until -->
-                            <div class="col-sm-6 col-md-4">
+                            <div class="col-md-6">
                                 <label class="form-label small text-muted">Valid Until</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-end-0">
@@ -280,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
 
                             <!-- Currency -->
-                            <div class="col-sm-6 col-md-4">
+                            <div class="col-md-6">
                                 <label class="form-label small text-muted">Currency</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-end-0">
@@ -290,6 +345,36 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <div class="form-control border-start-0 ps-0">
                                         <span class="currency-display">{{ old('currency', $quote->currency) }}</span>
                                     </div>
+                                </div>
+                            </div>
+
+                            <!-- Discount Amount -->
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">Discount Amount</label>
+                                <div class="input-group">
+                                    <input type="number" id="discount_amount" name="discount_amount" 
+                                        class="form-control @error('discount_amount') is-invalid @enderror" 
+                                        min="0" step="0.01" placeholder="Amount"
+                                        value="{{ old('discount_amount', $quote->discount_amount) }}">
+                                    <span class="input-group-text currency-display">{{ $quote->currency }}</span>
+                                    @error('discount_amount')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <!-- Discount Percentage -->
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">Discount Percentage</label>
+                                <div class="input-group">
+                                    <input type="number" id="discount_percentage" name="discount_percentage" 
+                                        class="form-control @error('discount_percentage') is-invalid @enderror" 
+                                        min="0" max="100" step="0.01" placeholder="Percentage"
+                                        value="{{ old('discount_percentage', $quote->discount_percentage) }}">
+                                    <span class="input-group-text">%</span>
+                                    @error('discount_percentage')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
                         </div>
@@ -360,6 +445,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             <span class="text-muted">Subtotal</span>
                             <div>
                                 <span id="subtotal">0.00</span>
+                                <span class="ms-1 text-muted currency-display">{{ $quote->currency }}</span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Discount</span>
+                            <div class="text-danger">
+                                -<span id="discount-amount-display">0.00</span>
                                 <span class="ms-1 text-muted currency-display">{{ $quote->currency }}</span>
                             </div>
                         </div>

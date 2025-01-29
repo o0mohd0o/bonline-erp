@@ -206,7 +206,7 @@
                     <h6 class="text-primary mb-3">Company Information</h6>
                     <div class="mb-2">
                         <div class="text-muted small">Company Name</div>
-                        <div class="fw-medium">{{ config('app.name') }}</div>
+                        <div class="fw-medium">{{ config('company.name') }}</div>
                     </div>
                     <div class="mb-2">
                         <div class="text-muted small">Commercial Register</div>
@@ -286,6 +286,14 @@
                             <td colspan="4" class="text-end">Subtotal:</td>
                             <td class="text-end fw-medium">{{ number_format($quote->subtotal, 2) }} {{ $quote->currency }}</td>
                         </tr>
+                        @if($quote->discount_amount > 0 || $quote->discount_percentage > 0)
+                        <tr>
+                            <td colspan="4" class="text-end">
+                                Discount{{ $quote->discount_percentage > 0 ? ' (' . number_format($quote->discount_percentage, 1) . '%)' : '' }}:
+                            </td>
+                            <td class="text-end text-danger">-{{ number_format($quote->discount_amount, 2) }} {{ $quote->currency }}</td>
+                        </tr>
+                        @endif
                         <tr>
                             <td colspan="4" class="text-end">VAT ({{ number_format($quote->vat_rate, 0) }}%):</td>
                             <td class="text-end">{{ number_format($quote->vat_amount, 2) }} {{ $quote->currency }}</td>
@@ -307,11 +315,19 @@
                         <span class="text-muted">Subtotal:</span>
                         <span class="fw-medium">{{ number_format($quote->subtotal, 2) }} {{ $quote->currency }}</span>
                     </div>
+                    @if($quote->discount_amount > 0 || $quote->discount_percentage > 0)
                     <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">VAT ({{ $quote->vat_rate }}%):</span>
+                        <span class="text-muted">
+                            Discount{{ $quote->discount_percentage > 0 ? ' (' . number_format($quote->discount_percentage, 1) . '%)' : '' }}:
+                        </span>
+                        <span class="text-danger">-{{ number_format($quote->discount_amount, 2) }} {{ $quote->currency }}</span>
+                    </div>
+                    @endif
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">VAT ({{ number_format($quote->vat_rate, 0) }}%):</span>
                         <span class="fw-medium">{{ number_format($quote->vat_amount, 2) }} {{ $quote->currency }}</span>
                     </div>
-                    <hr>
+                    <hr class="my-2">
                     <div class="d-flex justify-content-between">
                         <span class="fw-medium">Total:</span>
                         <span class="fw-bold">{{ number_format($quote->total, 2) }} {{ $quote->currency }}</span>

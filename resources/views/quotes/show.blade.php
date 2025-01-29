@@ -228,13 +228,21 @@
                                         <span class="text-muted">Subtotal:</span>
                                         <span>{{ $quote->currency }} {{ number_format($quote->subtotal, 2) }}</span>
                                     </div>
+                                    @if($quote->discount_amount > 0 || $quote->discount_percentage > 0)
                                     <div class="d-flex justify-content-between mb-2">
-                                        <span class="text-muted">VAT ({{ number_format($quote->vat_rate, 0) }}%):</span>
+                                        <span class="text-muted">
+                                            Discount{{ $quote->discount_percentage > 0 ? ' (' . number_format($quote->discount_percentage, 1) . '%)' : '' }}:
+                                        </span>
+                                        <span class="text-danger">-{{ $quote->currency }} {{ number_format($quote->discount_amount, 2) }}</span>
+                                    </div>
+                                    @endif
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">VAT ({{ $quote->vat_rate }}%):</span>
                                         <span>{{ $quote->currency }} {{ number_format($quote->vat_amount, 2) }}</span>
                                     </div>
-                                    <hr>
+                                    <hr class="my-2">
                                     <div class="d-flex justify-content-between">
-                                        <span class="fw-bold">Total:</span>
+                                        <span class="fw-medium">Total:</span>
                                         <span class="fw-bold">{{ $quote->currency }} {{ number_format($quote->total, 2) }}</span>
                                     </div>
                                 </div>

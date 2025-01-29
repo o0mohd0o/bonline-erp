@@ -46,6 +46,8 @@ class QuoteController extends Controller
             'items.*.quantity' => 'required|numeric|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.service_template_id' => 'nullable|exists:service_templates,id',
+            'discount_amount' => 'nullable|numeric|min:0',
+            'discount_percentage' => 'nullable|numeric|min:0|max:100',
             'notes' => 'nullable|string',
             'terms' => 'nullable|array',
             'terms.*' => 'exists:quote_terms,id',
@@ -79,12 +81,23 @@ class QuoteController extends Controller
             }
         }
 
+        // Calculate discount
+        $discountAmount = 0;
+        if ($request->filled('discount_amount')) {
+            $discountAmount = $request->discount_amount;
+        } elseif ($request->filled('discount_percentage')) {
+            $discountAmount = $subtotal * ($request->discount_percentage / 100);
+        }
+
+        // Apply discount to vatable amount proportionally
+        $vatableAmount = $vatableAmount * (($subtotal - $discountAmount) / $subtotal);
+
         $vatRate = 14.00; // 14% VAT
         $vatAmount = $vatableAmount * ($vatRate / 100);
-        $total = $subtotal + $vatAmount;
+        $total = $subtotal - $discountAmount + $vatAmount;
 
         try {
-            $result = \DB::transaction(function() use ($request, $subtotal, $vatRate, $vatAmount, $total) {
+            $result = \DB::transaction(function() use ($request, $subtotal, $discountAmount, $vatRate, $vatAmount, $total) {
                 $quote = Quote::create([
                     'quote_number' => Quote::generateQuoteNumber(),
                     'customer_id' => $request->customer_id,
@@ -92,6 +105,8 @@ class QuoteController extends Controller
                     'valid_until' => $request->valid_until,
                     'currency' => $request->currency,
                     'subtotal' => $subtotal,
+                    'discount_amount' => $discountAmount,
+                    'discount_percentage' => $request->discount_percentage,
                     'vat_rate' => $vatRate,
                     'vat_amount' => $vatAmount,
                     'total' => $total,
@@ -166,6 +181,8 @@ class QuoteController extends Controller
             'items.*.quantity' => 'required|numeric|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.service_template_id' => 'nullable|exists:service_templates,id',
+            'discount_amount' => 'nullable|numeric|min:0',
+            'discount_percentage' => 'nullable|numeric|min:0|max:100',
             'notes' => 'nullable|string',
             'terms' => 'nullable|array',
             'terms.*' => 'exists:quote_terms,id',
@@ -198,9 +215,20 @@ class QuoteController extends Controller
             }
         }
 
+        // Calculate discount
+        $discountAmount = 0;
+        if ($request->filled('discount_amount')) {
+            $discountAmount = $request->discount_amount;
+        } elseif ($request->filled('discount_percentage')) {
+            $discountAmount = $subtotal * ($request->discount_percentage / 100);
+        }
+
+        // Apply discount to vatable amount proportionally
+        $vatableAmount = $vatableAmount * (($subtotal - $discountAmount) / $subtotal);
+
         $vatRate = 14.00; // 14% VAT
         $vatAmount = $vatableAmount * ($vatRate / 100);
-        $total = $subtotal + $vatAmount;
+        $total = $subtotal - $discountAmount + $vatAmount;
 
         $quote->update([
             'customer_id' => $request->customer_id,
@@ -208,6 +236,8 @@ class QuoteController extends Controller
             'valid_until' => $request->valid_until,
             'currency' => $request->currency,
             'subtotal' => $subtotal,
+            'discount_amount' => $discountAmount,
+            'discount_percentage' => $request->discount_percentage,
             'vat_rate' => $vatRate,
             'vat_amount' => $vatAmount,
             'total' => $total,

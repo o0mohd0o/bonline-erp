@@ -153,11 +153,26 @@ window.updateTotals = function() {
         }
     });
 
+    // Calculate discount
+    const discountAmount = parseFloat(document.getElementById('discount_amount').value) || 0;
+    const discountPercentage = parseFloat(document.getElementById('discount_percentage').value) || 0;
+    let totalDiscount = discountAmount;
+    
+    if (discountPercentage > 0) {
+        totalDiscount = subtotal * (discountPercentage / 100);
+    }
+
+    // Apply discount to vatable amount proportionally
+    if (subtotal > 0) {
+        vatableAmount = vatableAmount * ((subtotal - totalDiscount) / subtotal);
+    }
+
     // Update summary
     const vatAmount = vatableAmount * (vatRate / 100);
-    const total = subtotal + vatAmount;
+    const total = subtotal - totalDiscount + vatAmount;
 
     document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+    document.getElementById('discount-amount-display').textContent = totalDiscount.toFixed(2);
     document.getElementById('vat-amount').textContent = vatAmount.toFixed(2);
     document.getElementById('total-amount').textContent = total.toFixed(2);
 
@@ -166,6 +181,21 @@ window.updateTotals = function() {
         el.textContent = selectedCurrency;
     });
 };
+
+// Handle discount input changes
+document.getElementById('discount_amount').addEventListener('input', function() {
+    if (this.value) {
+        document.getElementById('discount_percentage').value = '';
+    }
+    updateTotals();
+});
+
+document.getElementById('discount_percentage').addEventListener('input', function() {
+    if (this.value) {
+        document.getElementById('discount_amount').value = '';
+    }
+    updateTotals();
+});
 
 // Initialize everything when the DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -238,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <label class="form-label small text-muted">Quote Date</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-end-0">
-                                        <i class="fas fa-calendar text-muted"></i>
+                                        <i class="fas fa-calendar-alt text-muted"></i>
                                     </span>
                                     <input type="date" name="quote_date" class="form-control border-start-0 ps-0 @error('quote_date') is-invalid @enderror"
                                         value="{{ old('quote_date', now()->format('Y-m-d')) }}" required>
@@ -275,6 +305,42 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <span class="currency-display">{{ old('currency', 'EGP') }}</span>
                                     </div>
                                     @error('currency')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <!-- Discount Amount -->
+                            <div class="col-sm-6 col-md-4">
+                                <label class="form-label small text-muted">Discount Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="fas fa-tag text-muted"></i>
+                                    </span>
+                                    <input type="number" id="discount_amount" name="discount_amount" 
+                                        class="form-control @error('discount_amount') is-invalid @enderror" 
+                                        min="0" step="0.01" placeholder="Amount"
+                                        value="{{ old('discount_amount') }}">
+                                    <span class="input-group-text currency-display">{{ old('currency', 'EGP') }}</span>
+                                    @error('discount_amount')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <!-- Discount Percentage -->
+                            <div class="col-sm-6 col-md-4">
+                                <label class="form-label small text-muted">Discount Percentage</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="fas fa-percent text-muted"></i>
+                                    </span>
+                                    <input type="number" id="discount_percentage" name="discount_percentage" 
+                                        class="form-control @error('discount_percentage') is-invalid @enderror" 
+                                        min="0" max="100" step="0.01" placeholder="Percentage"
+                                        value="{{ old('discount_percentage') }}">
+                                    <span class="input-group-text">%</span>
+                                    @error('discount_percentage')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -348,6 +414,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div>
                                 <span id="subtotal">0.00</span>
                                 <span class="ms-1 text-muted currency-display">{{ old('currency', 'EGP') }}</span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Discount</span>
+                            <div class="text-danger">
+                                -<span id="discount-amount-display">0.00</span>
+                                <span class="ms-1 currency-display">{{ old('currency', 'EGP') }}</span>
                             </div>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
