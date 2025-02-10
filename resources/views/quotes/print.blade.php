@@ -164,7 +164,7 @@
         </div>
 
         <!-- Two Column Layout -->
-        <div class="row g-4 mb-4">
+        <div class="row g-4 mb-1">
             <!-- Left Column: Customer Info -->
             <div class="col-6">
                 <div class="bg-light rounded-3 p-3 h-100">
@@ -308,7 +308,7 @@
         </div>
 
         <!-- Totals -->
-        <div class="row justify-content-end">
+        <!-- <div class="row justify-content-end">
             <div class="col-5">
                 <div class="bg-light rounded-3 p-3">
                     <div class="d-flex justify-content-between mb-2">
@@ -334,7 +334,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <!-- Terms -->
         @if($quote->terms->isNotEmpty())

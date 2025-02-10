@@ -85,7 +85,7 @@
 
                 <div class="card-body">
                     <!-- Quote Header -->
-                    <div class="row mb-4">
+                    <div class="row mb-2">
                         <div class="col-md-6">
                             <h2 class="h5 mb-3">Quote Information</h2>
                             <table class="table table-sm">
@@ -166,7 +166,7 @@
                     </div>
 
                     <!-- Quote Items -->
-                    <div class="mb-4">
+                    <div class="mb-2">
                         <h2 class="h5 mb-3">Services</h2>
                         <div class="row g-4">
                             @foreach($quote->items as $item)
@@ -209,7 +209,7 @@
                     </div>
 
                     <!-- Quote Summary -->
-                    <div class="row mb-4">
+                    <div class="row mb-2">
                         <div class="col-md-6">
                             @if($quote->notes)
                                 <h2 class="h5 mb-3">Notes</h2>
