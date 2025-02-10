@@ -15,7 +15,8 @@ class ServiceTemplateController extends Controller
 
     public function create()
     {
-        return view('service-templates.create');
+        $serviceTemplate = new ServiceTemplate();
+        return view('service-templates.create', compact('serviceTemplate'));
     }
 
     public function store(Request $request)
