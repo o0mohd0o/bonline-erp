@@ -323,7 +323,7 @@
                         </tr>
                         <tr>
                             <td colspan="5" class="text-end text-muted small">
-                                فقط وقدره {{ \App\Helpers\NumberToWordsHelper::convertToArabicWords($invoice->total, $invoice->currency) }} لا غير
+                               {{ \App\Helpers\NumberToWordsHelper::convertToArabicWords($invoice->total, $invoice->currency) }}
                             </td>
                         </tr>
                     </tfoot>
