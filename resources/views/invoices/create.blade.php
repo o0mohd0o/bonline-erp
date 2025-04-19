@@ -5,6 +5,23 @@
 // Initialize variables and functions in the global scope
 window.itemCount = 0;
 window.serviceTemplates = {!! json_encode($serviceTemplates) !!};
+window.currentLang = 'ar'; // Default language for modal
+
+window.toggleTemplateLang = function() {
+    window.currentLang = window.currentLang === 'ar' ? 'en' : 'ar';
+    // Update the button label
+    const btn = document.getElementById('templateLangToggleBtn');
+    btn.innerHTML = `<i class="fas fa-language me-2"></i>${window.currentLang === 'ar' ? 'English' : 'عربي'}`;
+    // Update all template cards
+    document.querySelectorAll('.template-name').forEach((el, idx) => {
+        const template = window.serviceTemplates[idx];
+        el.textContent = template[`name_${window.currentLang}`];
+    });
+    document.querySelectorAll('.template-description').forEach((el, idx) => {
+        const template = window.serviceTemplates[idx];
+        el.textContent = template[`description_${window.currentLang}`];
+    });
+};
 
 window.addCustomService = function() {
     window.addInvoiceItem();
@@ -18,9 +35,9 @@ window.addTemplateService = function(templateId) {
     document.querySelector('input[name="currency"]').value = template.currency;
     
     window.addInvoiceItem({
-        service_name: template.name_ar,
-        description: template.description_ar,
-        details: template.details_ar,
+        service_name: template[`name_${window.currentLang}`],
+        description: template[`description_${window.currentLang}`],
+        details: template[`details_${window.currentLang}`],
         icon: template.icon,
         unit_price: template.default_price,
         quantity: 1,
@@ -136,11 +153,24 @@ window.updateTotals = function() {
         }
     });
 
+    // Calculate discount
+    const discountAmount = parseFloat(document.getElementById('discount_amount').value) || 0;
+    const discountPercentage = parseFloat(document.getElementById('discount_percentage').value) || 0;
+    let totalDiscount = discountAmount;
+    if (discountPercentage > 0) {
+        totalDiscount = subtotal * (discountPercentage / 100);
+    }
+    // Apply discount to vatable amount proportionally
+    if (subtotal > 0) {
+        vatableAmount = vatableAmount * ((subtotal - totalDiscount) / subtotal);
+    }
+
     // Update summary
     const vatAmount = vatableAmount * (vatRate / 100);
-    const total = subtotal + vatAmount;
+    const total = subtotal - totalDiscount + vatAmount;
 
     document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+    document.getElementById('discount-amount-display').textContent = totalDiscount.toFixed(2);
     document.getElementById('vat-amount').textContent = vatAmount.toFixed(2);
     document.getElementById('total-amount').textContent = total.toFixed(2);
 
@@ -149,6 +179,23 @@ window.updateTotals = function() {
         el.textContent = selectedCurrency;
     });
 };
+// Handle discount input changes
+if (document.getElementById('discount_amount')) {
+    document.getElementById('discount_amount').addEventListener('input', function() {
+        if (this.value) {
+            document.getElementById('discount_percentage').value = '';
+        }
+        updateTotals();
+    });
+}
+if (document.getElementById('discount_percentage')) {
+    document.getElementById('discount_percentage').addEventListener('input', function() {
+        if (this.value) {
+            document.getElementById('discount_amount').value = '';
+        }
+        updateTotals();
+    });
+}
 
 // Initialize everything when the DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -359,12 +406,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Subtotal</span>
-                            <div>
-                                <span id="subtotal">0.00</span>
-                                <span class="ms-1 text-muted currency-display">{{ old('currency', 'EGP') }}</span>
-                            </div>
-                        </div>
+    <span class="text-muted">Subtotal</span>
+    <div>
+        <span id="subtotal">0.00</span>
+        <span class="ms-1 text-muted currency-display">{{ old('currency', 'EGP') }}</span>
+    </div>
+</div>
+<!-- Discount Amount -->
+<div class="d-flex justify-content-between mb-2 align-items-center">
+    <span class="text-muted">Discount</span>
+    <div class="input-group" style="max-width: 250px;">
+        <input type="number" id="discount_amount" name="discount_amount" class="form-control form-control-sm" min="0" step="0.01" placeholder="Amount" value="{{ old('discount_amount') }}">
+        <span class="input-group-text currency-display">{{ old('currency', 'EGP') }}</span>
+        <input type="number" id="discount_percentage" name="discount_percentage" class="form-control form-control-sm ms-2" min="0" max="100" step="0.01" placeholder="%" value="{{ old('discount_percentage') }}">
+        <span class="input-group-text">%</span>
+    </div>
+</div>
+<div class="d-flex justify-content-between mb-2">
+    <span class="text-muted small">Discount Applied</span>
+    <div class="text-danger">
+        -<span id="discount-amount-display">0.00</span>
+        <span class="ms-1 currency-display">{{ old('currency', 'EGP') }}</span>
+    </div>
+</div>
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">VAT (14%)</span>
                             <div>
@@ -403,29 +467,32 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="modal-content">
             <div class="modal-header border-0 pb-0">
                 <h5 class="modal-title">Choose from Templates</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<button type="button" id="templateLangToggleBtn" class="btn btn-outline-secondary btn-sm ms-2" onclick="toggleTemplateLang()">
+    <i class="fas fa-language me-2"></i>English
+</button>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="row g-4">
-                    @foreach($serviceTemplates as $template)
-                        <div class="col-md-6">
-                            <div class="card h-100 border">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <div class="bg-light rounded-3 p-2 me-3">
-                                            <i class="{{ $template->icon }} text-primary"></i>
-                                        </div>
-                                        <h6 class="mb-0">{{ $template->name_ar }}</h6>
-                                    </div>
-                                    <p class="small text-muted mb-3">{{ $template->description_ar }}</p>
-                                    <button type="button" class="btn btn-outline-primary btn-sm w-100"
-                                        onclick="addTemplateService({{ $template->id }})">
-                                        <i class="fas fa-plus me-2"></i>Add Service
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
+                    @foreach($serviceTemplates as $idx => $template)
+    <div class="col-md-6">
+        <div class="card h-100 border">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-light rounded-3 p-2 me-3">
+                        <i class="{{ $template->icon }} text-primary"></i>
+                    </div>
+                    <h6 class="mb-0 template-name">{{ $template->name_ar }}</h6>
+                </div>
+                <p class="small text-muted mb-3 template-description">{{ $template->description_ar }}</p>
+                <button type="button" class="btn btn-outline-primary btn-sm w-100"
+                    onclick="addTemplateService({{ $template->id }})">
+                    <i class="fas fa-plus me-2"></i>Add Service
+                </button>
+            </div>
+        </div>
+    </div>
+@endforeach
                 </div>
             </div>
         </div>

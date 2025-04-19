@@ -16,6 +16,8 @@ class Invoice extends Model
         'invoice_type',
         'customer_id',
         'subtotal',
+        'discount_amount',
+        'discount_percentage',
         'vat_amount',
         'total',
         'currency',
@@ -26,6 +28,8 @@ class Invoice extends Model
         'invoice_date' => 'date',
         'due_date' => 'date',
         'subtotal' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
+        'discount_percentage' => 'decimal:2',
         'vat_amount' => 'decimal:2',
         'total' => 'decimal:2',
     ];

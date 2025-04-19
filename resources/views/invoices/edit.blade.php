@@ -136,11 +136,28 @@ window.updateTotals = function() {
         }
     });
 
+    // Discount logic
+    const discountAmountInput = document.getElementById('discount_amount');
+    const discountPercentageInput = document.getElementById('discount_percentage');
+    let discountAmount = parseFloat(discountAmountInput ? discountAmountInput.value : 0) || 0;
+    let discountPercentage = parseFloat(discountPercentageInput ? discountPercentageInput.value : 0) || 0;
+    let totalDiscount = discountAmount;
+    if (discountPercentage > 0) {
+        totalDiscount = subtotal * (discountPercentage / 100);
+    }
+    // Apply discount to vatable amount proportionally
+    if (subtotal > 0) {
+        vatableAmount = vatableAmount * ((subtotal - totalDiscount) / subtotal);
+    }
+
     // Update summary
     const vatAmount = vatableAmount * (vatRate / 100);
-    const total = subtotal + vatAmount;
+    const total = subtotal - totalDiscount + vatAmount;
 
     document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+    if (document.getElementById('discount-amount-display')) {
+        document.getElementById('discount-amount-display').textContent = totalDiscount.toFixed(2);
+    }
     document.getElementById('vat-amount').textContent = vatAmount.toFixed(2);
     document.getElementById('total-amount').textContent = total.toFixed(2);
 
@@ -149,6 +166,24 @@ window.updateTotals = function() {
         el.textContent = selectedCurrency;
     });
 };
+
+// Handle discount input changes
+if (document.getElementById('discount_amount')) {
+    document.getElementById('discount_amount').addEventListener('input', function() {
+        if (this.value) {
+            document.getElementById('discount_percentage').value = '';
+        }
+        updateTotals();
+    });
+}
+if (document.getElementById('discount_percentage')) {
+    document.getElementById('discount_percentage').addEventListener('input', function() {
+        if (this.value) {
+            document.getElementById('discount_amount').value = '';
+        }
+        updateTotals();
+    });
+}
 
 // Initialize everything when the DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -176,6 +211,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set initial currency value
     const defaultCurrency = '{{ old('currency', $invoice->currency) }}';
     document.querySelector('input[name="currency"]').value = defaultCurrency;
+    // Set initial discount values
+    if (document.getElementById('discount_amount')) {
+        document.getElementById('discount_amount').value = '{{ old('discount_amount', $invoice->discount_amount) }}';
+    }
+    if (document.getElementById('discount_percentage')) {
+        document.getElementById('discount_percentage').value = '{{ old('discount_percentage', $invoice->discount_percentage) }}';
+    }
     updateTotals();
 });
 </script>
@@ -288,6 +330,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <option value="draft" {{ old('status', $invoice->status) == 'draft' ? 'selected' : '' }}>Draft</option>
                                         <option value="pending" {{ old('status', $invoice->status) == 'pending' ? 'selected' : '' }}>Pending</option>
                                         <option value="paid" {{ old('status', $invoice->status) == 'paid' ? 'selected' : '' }}>Paid</option>
+                                        <option value="cancelled" {{ old('status', $invoice->status) == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                                     </select>
                                     @error('status')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -381,6 +424,23 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div>
                                 <span id="subtotal">0.00</span>
                                 <span class="ms-1 text-muted currency-display">{{ old('currency', $invoice->currency) }}</span>
+                            </div>
+                        </div>
+                        <!-- Discount Amount -->
+                        <div class="d-flex justify-content-between mb-2 align-items-center">
+                            <span class="text-muted">Discount</span>
+                            <div class="input-group" style="max-width: 250px;">
+                                <input type="number" id="discount_amount" name="discount_amount" class="form-control form-control-sm" min="0" step="0.01" placeholder="Amount" value="{{ old('discount_amount', $invoice->discount_amount) }}">
+                                <span class="input-group-text currency-display">{{ old('currency', $invoice->currency) }}</span>
+                                <input type="number" id="discount_percentage" name="discount_percentage" class="form-control form-control-sm ms-2" min="0" max="100" step="0.01" placeholder="%" value="{{ old('discount_percentage', $invoice->discount_percentage) }}">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Discount Applied</span>
+                            <div class="text-danger">
+                                -<span id="discount-amount-display">0.00</span>
+                                <span class="ms-1 currency-display">{{ old('currency', $invoice->currency) }}</span>
                             </div>
                         </div>
                         <div class="d-flex justify-content-between mb-2">

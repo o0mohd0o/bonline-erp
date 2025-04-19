@@ -65,10 +65,25 @@ class InvoiceController extends Controller
                 $vatableAmount += $itemTotal;
             }
         }
-        
+
+        // Discount logic
+        $discountAmount = 0;
+        $discountPercentage = null;
+        if ($request->filled('discount_amount')) {
+            $discountAmount = (float) $request->discount_amount;
+        } elseif ($request->filled('discount_percentage')) {
+            $discountPercentage = (float) $request->discount_percentage;
+            $discountAmount = $subtotal * ($discountPercentage / 100);
+        }
+
+        // Apply discount to vatable amount proportionally
+        if ($subtotal > 0) {
+            $vatableAmount = $vatableAmount * (($subtotal - $discountAmount) / $subtotal);
+        }
+
         $vatRate = 14.00; // 14% VAT
         $vatAmount = $vatableAmount * ($vatRate / 100);
-        $total = $subtotal + $vatAmount;
+        $total = $subtotal - $discountAmount + $vatAmount;
 
         $invoice = Invoice::create([
             'invoice_number' => $request->invoice_number,
@@ -77,6 +92,8 @@ class InvoiceController extends Controller
             'invoice_type' => $request->invoice_type,
             'currency' => $request->currency,
             'subtotal' => $subtotal,
+            'discount_amount' => $discountAmount,
+            'discount_percentage' => $discountPercentage,
             'vat_rate' => $vatRate,
             'vat_amount' => $vatAmount,
             'total' => $total,
@@ -168,10 +185,25 @@ class InvoiceController extends Controller
                     $vatableAmount += $itemTotal;
                 }
             }
-            
+
+            // Discount logic
+            $discountAmount = 0;
+            $discountPercentage = null;
+            if ($request->filled('discount_amount')) {
+                $discountAmount = (float) $request->discount_amount;
+            } elseif ($request->filled('discount_percentage')) {
+                $discountPercentage = (float) $request->discount_percentage;
+                $discountAmount = $subtotal * ($discountPercentage / 100);
+            }
+
+            // Apply discount to vatable amount proportionally
+            if ($subtotal > 0) {
+                $vatableAmount = $vatableAmount * (($subtotal - $discountAmount) / $subtotal);
+            }
+
             $vatRate = 14.00; // 14% VAT
             $vatAmount = $vatableAmount * ($vatRate / 100);
-            $total = $subtotal + $vatAmount;
+            $total = $subtotal - $discountAmount + $vatAmount;
 
             // Update invoice details
             $invoice->update([
@@ -182,6 +214,8 @@ class InvoiceController extends Controller
                 'invoice_type' => $request->invoice_type,
                 'currency' => $request->currency,
                 'subtotal' => $subtotal,
+                'discount_amount' => $discountAmount,
+                'discount_percentage' => $discountPercentage,
                 'vat_rate' => $vatRate,
                 'vat_amount' => $vatAmount,
                 'total' => $total,

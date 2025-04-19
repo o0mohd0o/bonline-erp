@@ -153,6 +153,18 @@
                                 <td colspan="4" class="text-end fw-medium">Subtotal:</td>
                                 <td class="text-end fw-medium">{{ number_format($invoice->subtotal, 2) }} {{ $invoice->currency }}</td>
                             </tr>
+                            @if($invoice->discount_amount > 0 || $invoice->discount_percentage > 0)
+                            <tr>
+                                <td colspan="4" class="text-end">
+                                    @if($invoice->discount_amount > 0)
+                                        Discount:
+                                    @elseif($invoice->discount_percentage > 0)
+                                        Discount ({{ number_format($invoice->discount_percentage, 2) }}%)
+                                    @endif
+                                </td>
+                                <td class="text-end text-danger">-{{ number_format($invoice->discount_amount, 2) }} {{ $invoice->currency }}</td>
+                            </tr>
+                            @endif
                             <tr>
                                 <td colspan="4" class="text-end">VAT ({{ $invoice->vat_rate }}%):</td>
                                 <td class="text-end">{{ number_format($invoice->vat_amount, 2) }} {{ $invoice->currency }}</td>
@@ -161,31 +173,17 @@
                                 <td colspan="4" class="text-end fw-bold">Total:</td>
                                 <td class="text-end fw-bold">{{ number_format($invoice->total, 2) }} {{ $invoice->currency }}</td>
                             </tr>
+                            <tr>
+                                <td colspan="5" class="text-end text-muted small">
+                                    فقط وقدره {{ \App\Helpers\NumberToWordsHelper::convertToArabicWords($invoice->total, $invoice->currency) }} لا غير
+                                </td>
+                            </tr>
                         </tfoot>
                     </table>
                 </div>
             </div>
 
-            <!-- Total Section -->
-            <div class="row justify-content-end">
-                <div class="col-md-5">
-                    <div class="bg-light rounded-3 p-4">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Subtotal:</span>
-                            <span class="fw-medium">{{ $invoice->currency }} {{ number_format($invoice->subtotal, 2) }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">VAT ({{ number_format($invoice->vat_rate, 0) }}%):</span>
-                            <span class="fw-medium">{{ $invoice->currency }} {{ number_format($invoice->vat_amount, 2) }}</span>
-                        </div>
-                        <hr>
-                        <div class="d-flex justify-content-between">
-                            <span class="fw-medium">Total:</span>
-                            <span class="h4 mb-0">{{ $invoice->currency }} {{ number_format($invoice->total, 2) }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
             <div class="row">
                 <div class="col-md-5">
                     <div class="mb-3">
