@@ -20,6 +20,7 @@
         'fas fa-check' => 'Check',
         'fas fa-clock' => 'Time',
         'fas fa-calendar' => 'Calendar',
+        'fas fa-shopping-cart' => 'E-commerce',
     ];
 @endphp
 
