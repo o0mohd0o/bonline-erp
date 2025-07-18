@@ -172,6 +172,31 @@
                                         </form>
                                     @endif
 
+                                    <!-- Test Email Button -->
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-outline-info btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-envelope"></i> Test
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <form action="{{ route('subscriptions.test-warning', $subscription) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="dropdown-item" onclick="return confirm('Send test warning email to {{ $subscription->notification_email }}?')">
+                                                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>Warning Email
+                                                    </button>
+                                                </form>
+                                            </li>
+                                            <li>
+                                                <form action="{{ route('subscriptions.test-expired', $subscription) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="dropdown-item" onclick="return confirm('Send test expired email to {{ $subscription->notification_email }}?')">
+                                                        <i class="fas fa-times-circle text-danger me-2"></i>Expired Email
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+
                                     <form action="{{ route('subscriptions.destroy', $subscription) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')

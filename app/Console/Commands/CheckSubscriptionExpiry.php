@@ -16,7 +16,7 @@ class CheckSubscriptionExpiry extends Command
      *
      * @var string
      */
-    protected $signature = 'subscriptions:check-expiry {--force : Force send notifications even if already sent}';
+    protected $signature = 'subscriptions:check-expiry {--force : Force send notifications even if already sent} {--test-email= : Send test email to specified address}';
 
     /**
      * The console command description.
@@ -30,6 +30,13 @@ class CheckSubscriptionExpiry extends Command
      */
     public function handle()
     {
+        $testEmail = $this->option('test-email');
+        
+        // If test email is provided, send test emails
+        if ($testEmail) {
+            return $this->sendTestEmails($testEmail);
+        }
+        
         $this->info('Checking subscription expiry...');
         
         $force = $this->option('force');
@@ -135,5 +142,59 @@ class CheckSubscriptionExpiry extends Command
         }
 
         $this->info("Sent {$expiredNotificationsSent} expiry notification(s).");
+    }
+
+    /**
+     * Send test emails to specified address
+     */
+    private function sendTestEmails($email)
+    {
+        $this->info("Sending test emails to: {$email}");
+        
+        // Create a dummy subscription for testing
+        $subscription = new Subscription([
+            'subscription_number' => 'TEST-' . date('Ymd-His'),
+            'billing_cycle' => 'monthly',
+            'price' => 99.99,
+            'currency' => 'SAR',
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addDays(5), // 5 days from now for warning test
+            'notification_email' => $email,
+            'notify_before_days' => 15,
+        ]);
+        
+        // Create dummy relationships
+        $customer = new \stdClass();
+        $customer->full_name = 'Test Customer';
+        $customer->email = 'test@example.com';
+        $subscription->setRelation('customer', $customer);
+        
+        $serviceTemplate = new class {
+            public $name_en = 'Test Service';
+            public $description_en = 'This is a test service for email testing purposes.';
+            public function getName() { return $this->name_en; }
+            public function getDescription() { return $this->description_en; }
+        };
+        $subscription->setRelation('serviceTemplate', $serviceTemplate);
+        
+        try {
+            // Send test warning email
+            $this->info('Sending test expiry warning email...');
+            Mail::to($email)->send(new SubscriptionExpiryWarning($subscription));
+            $this->line("✓ Test expiry warning email sent successfully");
+            
+            // Send test expired email
+            $this->info('Sending test expired notification email...');
+            Mail::to($email)->send(new SubscriptionExpired($subscription));
+            $this->line("✓ Test expired notification email sent successfully");
+            
+            $this->info("Test emails sent successfully to: {$email}");
+            
+        } catch (\Exception $e) {
+            $this->error("Failed to send test emails: {$e->getMessage()}");
+            return 1;
+        }
+        
+        return 0;
     }
 }

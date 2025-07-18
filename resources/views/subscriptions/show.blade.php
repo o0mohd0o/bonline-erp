@@ -253,7 +253,7 @@
                     </div>
 
                     <!-- Quick Actions -->
-                    <div class="card shadow-sm border-0 rounded-3">
+                    <div class="card shadow-sm border-0 rounded-3 mb-4">
                         <div class="card-header bg-transparent border-0 py-3">
                             <h5 class="mb-0">
                                 <i class="fas fa-bolt text-primary me-2"></i>
@@ -294,6 +294,44 @@
                                 <a href="{{ route('subscriptions.edit', $subscription) }}" class="btn btn-outline-primary btn-sm">
                                     <i class="fas fa-edit me-1"></i> Edit Details
                                 </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Test Email Notifications -->
+                    <div class="card shadow-sm border-0 rounded-3">
+                        <div class="card-header bg-transparent border-0 py-3">
+                            <h5 class="mb-0">
+                                <i class="fas fa-envelope-open-text text-primary me-2"></i>
+                                Test Email Notifications
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted small mb-3">
+                                Send test emails to <strong>{{ $subscription->notification_email }}</strong> to verify email configuration.
+                            </p>
+                            
+                            <div class="d-grid gap-2">
+                                <form action="{{ route('subscriptions.test-warning', $subscription) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline-warning btn-sm w-100" onclick="return confirm('Send test expiry warning email to {{ $subscription->notification_email }}?')">
+                                        <i class="fas fa-exclamation-triangle me-1"></i> Send Test Warning Email
+                                    </button>
+                                </form>
+                                
+                                <form action="{{ route('subscriptions.test-expired', $subscription) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('Send test expired notification email to {{ $subscription->notification_email }}?')">
+                                        <i class="fas fa-times-circle me-1"></i> Send Test Expired Email
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    These are test emails and won't affect notification tracking.
+                                </small>
                             </div>
                         </div>
                     </div>

@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Subscription;
 use App\Models\Customer;
 use App\Models\ServiceTemplate;
+use App\Mail\SubscriptionExpiryWarning;
+use App\Mail\SubscriptionExpired;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
 class SubscriptionController extends Controller
@@ -202,5 +205,37 @@ class SubscriptionController extends Controller
             'default_price' => $serviceTemplate->default_price,
             'currency' => $serviceTemplate->currency,
         ]);
+    }
+
+    /**
+     * Send test expiry warning email
+     */
+    public function sendTestWarning(Subscription $subscription)
+    {
+        try {
+            Mail::to($subscription->notification_email)->send(new SubscriptionExpiryWarning($subscription));
+            
+            return redirect()->back()
+                ->with('success', 'Test expiry warning email sent successfully to ' . $subscription->notification_email);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to send test email: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Send test expired notification email
+     */
+    public function sendTestExpired(Subscription $subscription)
+    {
+        try {
+            Mail::to($subscription->notification_email)->send(new SubscriptionExpired($subscription));
+            
+            return redirect()->back()
+                ->with('success', 'Test expired notification email sent successfully to ' . $subscription->notification_email);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to send test email: ' . $e->getMessage());
+        }
     }
 }

@@ -40,5 +40,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('subscriptions', SubscriptionController::class);
     Route::patch('subscriptions/{subscription}/status', [SubscriptionController::class, 'updateStatus'])->name('subscriptions.updateStatus');
     Route::patch('subscriptions/{subscription}/renew', [SubscriptionController::class, 'renew'])->name('subscriptions.renew');
+    Route::post('subscriptions/{subscription}/test-warning', [SubscriptionController::class, 'sendTestWarning'])->name('subscriptions.test-warning');
+    Route::post('subscriptions/{subscription}/test-expired', [SubscriptionController::class, 'sendTestExpired'])->name('subscriptions.test-expired');
     Route::get('service-templates/{serviceTemplate}/details', [SubscriptionController::class, 'getServiceTemplateDetails'])->name('service-templates.details');
 });
