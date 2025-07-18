@@ -6,23 +6,32 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\ServiceTemplateController;
+use App\Http\Controllers\AuthController;
 
-Route::get('/', [InvoiceController::class, 'index'])->name('home');
+// Authentication Routes
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::resource('invoices', InvoiceController::class);
-Route::get('invoices/{invoice}/print', [InvoiceController::class, 'print'])->name('invoices.print');
+// Protected Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/', [InvoiceController::class, 'index'])->name('home');
 
-// Customer routes
-Route::resource('customers', CustomerController::class);
-Route::patch('customers/{customer}/status', [CustomerController::class, 'updateStatus'])->name('customers.update-status');
+    Route::resource('invoices', InvoiceController::class);
+    Route::get('invoices/{invoice}/print', [InvoiceController::class, 'print'])->name('invoices.print');
 
-Route::resource('receipts', ReceiptController::class);
-Route::get('receipts/{id}/print', [ReceiptController::class, 'print'])->name('receipts.print');
+    // Customer routes
+    Route::resource('customers', CustomerController::class);
+    Route::patch('customers/{customer}/status', [CustomerController::class, 'updateStatus'])->name('customers.update-status');
 
-// Quote routes
-Route::resource('quotes', QuoteController::class);
-Route::patch('quotes/{quote}/status', [QuoteController::class, 'updateStatus'])->name('quotes.status.update');
-Route::get('quotes/{quote}/print', [QuoteController::class, 'print'])->name('quotes.print');
+    Route::resource('receipts', ReceiptController::class);
+    Route::get('receipts/{id}/print', [ReceiptController::class, 'print'])->name('receipts.print');
 
-// Service Template routes
-Route::resource('service-templates', ServiceTemplateController::class);
+    // Quote routes
+    Route::resource('quotes', QuoteController::class);
+    Route::patch('quotes/{quote}/status', [QuoteController::class, 'updateStatus'])->name('quotes.status.update');
+    Route::get('quotes/{quote}/print', [QuoteController::class, 'print'])->name('quotes.print');
+
+    // Service Template routes
+    Route::resource('service-templates', ServiceTemplateController::class);
+});

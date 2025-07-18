@@ -128,6 +128,14 @@
                             <i class="fas fa-tools me-2"></i>Services
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                            @csrf
+                            <button type="submit" class="nav-link btn btn-link text-decoration-none border-0 p-0" style="color: #dc3545; background: none;">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </button>
+                        </form>
+                    </li>
                 </ul>
             </div>
         </div>

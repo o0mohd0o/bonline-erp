@@ -32,6 +32,8 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->text('details')->nullable(); // JSON array of service details/bullets
             $table->string('icon')->nullable(); // FontAwesome icon class
+            $table->decimal('quantity', 10, 2)->default(1);
+            $table->decimal('unit_price', 10, 2)->default(0);
             $table->decimal('amount', 10, 2);
             $table->timestamps();
         });
