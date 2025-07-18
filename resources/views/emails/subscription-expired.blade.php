@@ -124,15 +124,16 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="expired-icon">❌</div>
-            <h1>Subscription Expired</h1>
+            <div class="expired-icon">🔔</div>
+            <h1>Service Subscription Status Update</h1>
+            <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">{{ $subscription->subscription_number }}</p>
         </div>
         
         <div class="content">
             <p>Dear Administrator,</p>
             
             <div class="alert-box">
-                <strong>Urgent Notice:</strong> A subscription has expired and requires immediate attention.
+                <strong>Service Status Notice:</strong> A subscription has reached its expiration date and requires your attention.
             </div>
             
             <div class="expired-highlight">
@@ -191,40 +192,50 @@
             </div>
             
             <div class="urgent-actions">
-                <h3 style="margin-top: 0; color: #dc2626;">🚨 Immediate Actions Required:</h3>
+                <h3 style="margin-top: 0; color: #374151;">📋 Recommended Next Steps:</h3>
                 <ul>
-                    <li><strong>Contact the customer immediately</strong> to discuss service continuation</li>
-                    <li>Determine if the customer wants to renew the subscription</li>
-                    <li>Process payment and renew if customer agrees</li>
-                    <li>Consider suspending or terminating services if no response</li>
-                    <li>Update the subscription status in the system</li>
+                    <li><strong>Contact the customer</strong> to discuss service renewal options</li>
+                    <li>Confirm if the customer wishes to continue the service</li>
+                    <li>Process renewal payment if customer chooses to continue</li>
+                    <li>Update the subscription status accordingly</li>
                     @if($subscription->auto_renew)
-                    <li>Investigate why auto-renewal failed and resolve the issue</li>
+                    <li>Review why the automatic renewal process was unsuccessful</li>
                     @endif
                 </ul>
             </div>
             
             <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0;">
-                <h4 style="margin-top: 0; color: #374151;">Service Impact:</h4>
-                <p style="margin-bottom: 0;">The customer may be experiencing service interruptions. Please take immediate action to restore services or communicate the status to the customer.</p>
+                <h4 style="margin-top: 0; color: #374151;">Customer Service Note:</h4>
+                <p style="margin-bottom: 0;">The customer's services may be affected. Please follow up promptly to ensure continuity of service or provide clear communication about the service status.</p>
             </div>
             
             <p><strong>This notification was sent to:</strong> {{ $subscription->notification_email }}</p>
             
             <p>Best regards,<br>
-            <strong>{{ config('app.name') }} System</strong></p>
+            <strong>{{ config('app.name') }} Team</strong></p>
         </div>
         
         <div class="footer">
-            <p>This is an automated notification from {{ config('app.name') }}.<br>
-            Please do not reply to this email.</p>
-            
-            <p style="margin-top: 15px;">
-                <small>
-                    Sent on {{ now()->format('F j, Y \a\t g:i A') }}<br>
-                    Notification Email: {{ $subscription->notification_email }}
-                </small>
-            </p>
+            <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px;">
+                <h4 style="margin-top: 0; color: #374151;">Contact Information:</h4>
+                <p style="margin: 5px 0;">
+                    <strong>{{ config('app.name') }}</strong><br>
+                    Email: info@bonlineco.com<br>
+                    Website: https://bonlineco.com
+                </p>
+                
+                <p style="margin-top: 15px; font-size: 14px; color: #6b7280;">
+                    This is an automated service notification.<br>
+                    For support, please contact us through the channels above.
+                </p>
+                
+                <p style="margin-top: 15px;">
+                    <small style="color: #9ca3af;">
+                        Generated: {{ now()->format('F j, Y \a\t g:i A') }}<br>
+                        Reference: {{ $subscription->subscription_number }}
+                    </small>
+                </p>
+            </div>
         </div>
     </div>
 </body>

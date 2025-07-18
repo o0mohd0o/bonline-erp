@@ -46,7 +46,7 @@ class SubscriptionExpiryWarning extends Mailable
                 'subscription' => $this->subscription,
                 'customer' => $this->subscription->customer,
                 'serviceTemplate' => $this->subscription->serviceTemplate,
-                'daysUntilExpiry' => $this->subscription->end_date->diffInDays(now()),
+                'daysUntilExpiry' => (int) $this->subscription->end_date->diffInDays(now()),
             ],
         );
     }

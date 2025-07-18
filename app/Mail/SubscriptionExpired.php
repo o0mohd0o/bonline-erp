@@ -30,7 +30,7 @@ class SubscriptionExpired extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Subscription Expired - ' . $this->subscription->subscription_number,
+            subject: 'Service Subscription Status Update - ' . $this->subscription->subscription_number,
         );
     }
 
@@ -46,7 +46,7 @@ class SubscriptionExpired extends Mailable
                 'subscription' => $this->subscription,
                 'customer' => $this->subscription->customer,
                 'serviceTemplate' => $this->subscription->serviceTemplate,
-                'daysOverdue' => now()->diffInDays($this->subscription->end_date),
+                'daysOverdue' => (int) $this->subscription->end_date->diffInDays(now()),
             ],
         );
     }

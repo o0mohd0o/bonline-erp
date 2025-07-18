@@ -245,12 +245,17 @@ class SubscriptionController extends Controller
      */
     public function sendTestExpired(Subscription $subscription)
     {
+        Log::info('sendTestExpired method called for subscription: ' . $subscription->id);
+        
         try {
+            Log::info('Attempting to send expired email to: ' . $subscription->notification_email);
             Mail::to($subscription->notification_email)->send(new SubscriptionExpired($subscription));
             
+            Log::info('Expired email sent successfully to: ' . $subscription->notification_email);
             return redirect()->back()
                 ->with('success', 'Test expired notification email sent successfully to ' . $subscription->notification_email);
         } catch (\Exception $e) {
+            Log::error('Failed to send expired email: ' . $e->getMessage());
             return redirect()->back()
                 ->with('error', 'Failed to send test email: ' . $e->getMessage());
         }

@@ -210,4 +210,106 @@ class Subscription extends Model
             $this->update(['status' => self::STATUS_EXPIRED]);
         }
     }
+
+    /**
+     * Convert price to EGP for consistent revenue calculations
+     */
+    public function getPriceInEgpAttribute(): float
+    {
+        if ($this->currency === 'EGP') {
+            return $this->price;
+        }
+
+        $rate = $this->getCachedExchangeRate($this->currency, 'EGP');
+        return $this->price * $rate;
+    }
+
+    /**
+     * Get cached exchange rate with API fallback
+     */
+    private function getCachedExchangeRate($fromCurrency, $toCurrency = 'EGP'): float
+    {
+        if ($fromCurrency === $toCurrency) {
+            return 1.0;
+        }
+
+        // Cache key for the exchange rate
+        $cacheKey = "exchange_rate_{$fromCurrency}_{$toCurrency}";
+        
+        // Try to get from cache first (cache for 1 hour)
+        $cachedRate = \Cache::remember($cacheKey, 3600, function() use ($fromCurrency, $toCurrency) {
+            return $this->fetchExchangeRateFromAPI($fromCurrency, $toCurrency);
+        });
+
+        return $cachedRate;
+    }
+
+    /**
+     * Fetch exchange rate from API with fallback
+     */
+    private function fetchExchangeRateFromAPI($fromCurrency, $toCurrency = 'EGP'): float
+    {
+        try {
+            // Use exchangerate-api.com with API key for better reliability
+            $apiKey = env('EXCHANGE_RATE_API_KEY');
+            
+            if ($apiKey) {
+                // Use v6 API with key for higher rate limits
+                $url = "https://v6.exchangerate-api.com/v6/{$apiKey}/latest/{$fromCurrency}";
+            } else {
+                // Fallback to free tier if no API key
+                $url = "https://api.exchangerate-api.com/v4/latest/{$fromCurrency}";
+            }
+            
+            $response = file_get_contents($url);
+            $data = json_decode($response, true);
+            
+            // Check for API errors
+            if (isset($data['result']) && $data['result'] === 'error') {
+                throw new \Exception('API Error: ' . ($data['error-type'] ?? 'Unknown error'));
+            }
+            
+            if (isset($data['conversion_rates'][$toCurrency])) {
+                $rate = $data['conversion_rates'][$toCurrency];
+                \Log::info("Successfully fetched exchange rate: 1 {$fromCurrency} = {$rate} {$toCurrency}");
+                return $rate;
+            } elseif (isset($data['rates'][$toCurrency])) {
+                // Fallback for v4 API format
+                $rate = $data['rates'][$toCurrency];
+                \Log::info("Successfully fetched exchange rate: 1 {$fromCurrency} = {$rate} {$toCurrency}");
+                return $rate;
+            }
+            
+        } catch (\Exception $e) {
+            \Log::warning('Currency API failed, using fallback rates: ' . $e->getMessage());
+        }
+
+        // Fallback rates if API is unavailable (updated to current market rates)
+        $fallbackRates = [
+            'USD' => ['EGP' => 49.4, 'SAR' => 3.75],
+            'SAR' => ['EGP' => 13.2, 'USD' => 0.27],
+            'EGP' => ['USD' => 0.0202, 'SAR' => 0.076]
+        ];
+        
+        return $fallbackRates[$fromCurrency][$toCurrency] ?? 1.0;
+    }
+
+    /**
+     * Get current exchange rate from currency to EGP (public method)
+     */
+    public static function getExchangeRate($fromCurrency, $toCurrency = 'EGP'): float
+    {
+        $subscription = new static();
+        return $subscription->getCachedExchangeRate($fromCurrency, $toCurrency);
+    }
+
+    /**
+     * Get total revenue in EGP for all active subscriptions
+     */
+    public static function getTotalRevenueInEgp(): float
+    {
+        return static::where('status', 'active')
+            ->get()
+            ->sum('price_in_egp');
+    }
 }

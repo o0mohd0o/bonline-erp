@@ -91,7 +91,7 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h6 class="card-title mb-1">Total Revenue</h6>
-                                    <h3 class="mb-0">${{ number_format($subscriptions->where('status', 'active')->sum('price'), 2) }}</h3>
+                                    <h3 class="mb-0">EGP {{ number_format(\App\Models\Subscription::getTotalRevenueInEgp(), 2) }}</h3>
                                 </div>
                                 <i class="fas fa-dollar-sign fa-2x opacity-75"></i>
                             </div>
