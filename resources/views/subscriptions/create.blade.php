@@ -23,6 +23,16 @@
             <!-- Form Card -->
             <div class="card shadow-sm border-0 rounded-3">
                 <div class="card-body p-4">
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <form action="{{ route('subscriptions.store') }}" method="POST" id="subscriptionForm">
                         @csrf
                         

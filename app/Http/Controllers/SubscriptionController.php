@@ -9,6 +9,7 @@ use App\Mail\SubscriptionExpiryWarning;
 use App\Mail\SubscriptionExpired;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class SubscriptionController extends Controller
@@ -41,40 +42,56 @@ class SubscriptionController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'customer_id' => 'required|exists:customers,id',
-            'service_template_id' => 'required|exists:service_templates,id',
-            'billing_cycle' => 'required|in:monthly,every_6_months,yearly',
-            'price' => 'required|numeric|min:0',
-            'currency' => 'required|in:USD,SAR,EGP',
-            'start_date' => 'required|date',
-            'notification_email' => 'required|email',
-            'notify_before_days' => 'required|integer|min:1|max:90',
-            'auto_renew' => 'boolean',
-            'notes' => 'nullable|string',
-        ]);
+        try {
+            $request->validate([
+                'customer_id' => 'required|exists:customers,id',
+                'service_template_id' => 'required|exists:service_templates,id',
+                'billing_cycle' => 'required|in:monthly,every_6_months,yearly',
+                'price' => 'required|numeric|min:0',
+                'currency' => 'required|in:USD,SAR,EGP',
+                'start_date' => 'required|date',
+                'notification_email' => 'required|email',
+                'notify_before_days' => 'required|integer|min:1|max:90',
+                'auto_renew' => 'boolean',
+                'notes' => 'nullable|string',
+            ]);
 
-        $subscription = new Subscription();
-        $subscription->customer_id = $request->customer_id;
-        $subscription->service_template_id = $request->service_template_id;
-        $subscription->subscription_number = Subscription::generateSubscriptionNumber();
-        $subscription->billing_cycle = $request->billing_cycle;
-        $subscription->price = $request->price;
-        $subscription->currency = $request->currency;
-        $subscription->start_date = $request->start_date;
-        $subscription->notification_email = $request->notification_email;
-        $subscription->notify_before_days = $request->notify_before_days;
-        $subscription->auto_renew = $request->has('auto_renew');
-        $subscription->notes = $request->notes;
-        
-        // Calculate end date and next billing date
-        $subscription->end_date = $subscription->calculateEndDate($request->start_date);
-        $subscription->next_billing_date = $subscription->end_date;
+            $subscription = new Subscription();
+            $subscription->customer_id = $request->customer_id;
+            $subscription->service_template_id = $request->service_template_id;
+            $subscription->subscription_number = Subscription::generateSubscriptionNumber();
+            $subscription->billing_cycle = $request->billing_cycle;
+            $subscription->price = $request->price;
+            $subscription->currency = $request->currency;
+            $subscription->start_date = $request->start_date;
+            $subscription->notification_email = $request->notification_email;
+            $subscription->notify_before_days = $request->notify_before_days;
+            $subscription->auto_renew = $request->boolean('auto_renew');
+            $subscription->notes = $request->notes;
+            
+            // Calculate end date and next billing date
+            $subscription->end_date = $subscription->calculateEndDate($request->start_date);
+            $subscription->next_billing_date = $subscription->end_date;
 
-        $subscription->save();
+            $subscription->save();
 
-        return redirect()->route('subscriptions.index')
-            ->with('success', 'Subscription created successfully.');
+            return redirect()->route('subscriptions.index')
+                ->with('success', 'Subscription created successfully.');
+                
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->validator)
+                ->withInput();
+        } catch (\Exception $e) {
+            Log::error('Subscription creation failed: ' . $e->getMessage(), [
+                'request_data' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->back()
+                ->with('error', 'Failed to create subscription: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     /**
@@ -128,7 +145,7 @@ class SubscriptionController extends Controller
         $subscription->notification_email = $request->notification_email;
         $subscription->notify_before_days = $request->notify_before_days;
         $subscription->status = $request->status;
-        $subscription->auto_renew = $request->has('auto_renew');
+        $subscription->auto_renew = $request->boolean('auto_renew');
         $subscription->notes = $request->notes;
 
         // Recalculate end date if start date or billing cycle changed
