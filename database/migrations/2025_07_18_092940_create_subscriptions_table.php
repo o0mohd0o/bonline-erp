@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('subscription_number')->unique();
             $table->enum('billing_cycle', ['monthly', 'every_6_months', 'yearly']);
             $table->decimal('price', 10, 2);
-            $table->string('currency', 3)->default('SAR');
+            $table->string('currency', 3)->default('EGP');
             
             // Dates
             $table->date('start_date');
