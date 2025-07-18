@@ -129,6 +129,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('subscriptions.*') ? 'active' : '' }}" href="{{ route('subscriptions.index') }}">
+                            <i class="fas fa-calendar-check me-2"></i>Subscriptions
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <form method="POST" action="{{ route('logout') }}" class="d-inline">
                             @csrf
                             <button type="submit" class="nav-link btn btn-link text-decoration-none border-0 p-0" style="color: #dc3545; background: none;">

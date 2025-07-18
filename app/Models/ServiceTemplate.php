@@ -54,4 +54,9 @@ class ServiceTemplate extends Model
     {
         return app()->getLocale() === 'ar' ? $this->details_ar : $this->details_en;
     }
+
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
 }

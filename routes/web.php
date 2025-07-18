@@ -6,6 +6,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\ServiceTemplateController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\AuthController;
 
 // Authentication Routes
@@ -34,4 +35,10 @@ Route::middleware(['auth'])->group(function () {
 
     // Service Template routes
     Route::resource('service-templates', ServiceTemplateController::class);
+
+    // Subscription routes
+    Route::resource('subscriptions', SubscriptionController::class);
+    Route::patch('subscriptions/{subscription}/status', [SubscriptionController::class, 'updateStatus'])->name('subscriptions.updateStatus');
+    Route::patch('subscriptions/{subscription}/renew', [SubscriptionController::class, 'renew'])->name('subscriptions.renew');
+    Route::get('service-templates/{serviceTemplate}/details', [SubscriptionController::class, 'getServiceTemplateDetails'])->name('service-templates.details');
 });
