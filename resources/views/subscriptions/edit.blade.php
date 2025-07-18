@@ -167,9 +167,10 @@
                             <div class="col-md-6">
                                 <label for="currency" class="form-label">Currency <span class="text-danger">*</span></label>
                                 <select name="currency" id="currency" class="form-select @error('currency') is-invalid @enderror" required>
-                                    <option value="SAR" {{ (old('currency') ?? $subscription->currency) == 'SAR' ? 'selected' : '' }}>SAR</option>
+                                    <option value="">Select Currency</option>
                                     <option value="USD" {{ (old('currency') ?? $subscription->currency) == 'USD' ? 'selected' : '' }}>USD</option>
-                                    <option value="EUR" {{ (old('currency') ?? $subscription->currency) == 'EUR' ? 'selected' : '' }}>EUR</option>
+                                    <option value="SAR" {{ (old('currency') ?? $subscription->currency) == 'SAR' ? 'selected' : '' }}>SAR</option>
+                                    <option value="EGP" {{ (old('currency') ?? $subscription->currency) == 'EGP' ? 'selected' : '' }}>EGP</option>
                                 </select>
                                 @error('currency')
                                     <div class="invalid-feedback">{{ $message }}</div>

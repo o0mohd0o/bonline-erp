@@ -156,7 +156,7 @@ class CheckSubscriptionExpiry extends Command
             'subscription_number' => 'TEST-' . date('Ymd-His'),
             'billing_cycle' => 'monthly',
             'price' => 99.99,
-            'currency' => 'SAR',
+            'currency' => 'EGP',
             'start_date' => Carbon::now(),
             'end_date' => Carbon::now()->addDays(5), // 5 days from now for warning test
             'notification_email' => $email,
