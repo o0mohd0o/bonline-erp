@@ -35,6 +35,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Service Template routes
     Route::resource('service-templates', ServiceTemplateController::class);
+    Route::post('service-templates/{serviceTemplate}/duplicate', [ServiceTemplateController::class, 'duplicate'])->name('service-templates.duplicate');
 
     // Subscription routes
     Route::resource('subscriptions', SubscriptionController::class);

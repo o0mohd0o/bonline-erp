@@ -9,6 +9,12 @@ class ServiceTemplate extends Model
 {
     use HasFactory;
 
+    // Subscription type constants
+    const SUBSCRIPTION_TYPE_ONE_TIME = 'one_time';
+    const SUBSCRIPTION_TYPE_MONTHLY = 'monthly';
+    const SUBSCRIPTION_TYPE_EVERY_6_MONTHS = 'every_6_months';
+    const SUBSCRIPTION_TYPE_YEARLY = 'yearly';
+
     protected $fillable = [
         'name_ar',
         'name_en',
@@ -19,6 +25,7 @@ class ServiceTemplate extends Model
         'icon',
         'default_price',
         'currency',
+        'subscription_type',
         'is_vat_free',
         'is_active',
     ];
@@ -58,5 +65,27 @@ class ServiceTemplate extends Model
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    /**
+     * Get subscription type display label
+     */
+    public function getSubscriptionTypeLabel()
+    {
+        return match ($this->subscription_type) {
+            self::SUBSCRIPTION_TYPE_ONE_TIME => app()->getLocale() === 'ar' ? 'مرة واحدة' : 'One Time',
+            self::SUBSCRIPTION_TYPE_MONTHLY => app()->getLocale() === 'ar' ? 'شهرياً' : 'Monthly',
+            self::SUBSCRIPTION_TYPE_EVERY_6_MONTHS => app()->getLocale() === 'ar' ? 'كل 6 أشهر' : 'Every 6 Months',
+            self::SUBSCRIPTION_TYPE_YEARLY => app()->getLocale() === 'ar' ? 'سنوياً' : 'Yearly',
+            default => app()->getLocale() === 'ar' ? 'غير محدد' : 'Unknown',
+        };
+    }
+
+    /**
+     * Check if service is recurring (subscription-based)
+     */
+    public function isRecurring()
+    {
+        return $this->subscription_type !== self::SUBSCRIPTION_TYPE_ONE_TIME;
     }
 }

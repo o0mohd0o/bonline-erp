@@ -491,6 +491,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <div>
                                             <h6 class="card-title mb-1">{{ $template->name_ar }}</h6>
                                             <div class="small text-muted">{{ $template->description_ar }}</div>
+                                            <div class="mt-1">
+                                                <span @class([
+                                                    'badge badge-sm rounded-pill',
+                                                    'bg-info bg-opacity-10 text-info' => $template->subscription_type === 'one_time',
+                                                    'bg-primary bg-opacity-10 text-primary' => $template->subscription_type === 'monthly',
+                                                    'bg-warning bg-opacity-10 text-warning' => $template->subscription_type === 'every_6_months',
+                                                    'bg-success bg-opacity-10 text-success' => $template->subscription_type === 'yearly'
+                                                ])>
+                                                    {{ $template->getSubscriptionTypeLabel() }}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                     @if(!empty($template->details_ar))

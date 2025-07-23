@@ -36,7 +36,8 @@ class ServiceTemplateController extends Controller
             'details_en.*' => 'string',
             'icon' => 'required|string|max:50',
             'default_price' => 'required|numeric|min:0',
-            'currency' => 'required|in:USD,SAR,EGP',
+            'currency' => 'required|in:USD,SAR,EGP,AUD',
+            'subscription_type' => 'required|in:one_time,monthly,every_6_months,yearly',
             'is_active' => 'boolean',
             'is_vat_free' => 'boolean'
         ]);
@@ -118,7 +119,8 @@ class ServiceTemplateController extends Controller
             'details_en.*' => 'string',
             'icon' => 'required|string|max:50',
             'default_price' => 'required|numeric|min:0',
-            'currency' => 'required|in:USD,SAR,EGP',
+            'currency' => 'required|in:USD,SAR,EGP,AUD',
+            'subscription_type' => 'required|in:one_time,monthly,every_6_months,yearly',
             'is_active' => 'boolean',
             'is_vat_free' => 'boolean'
         ]);
@@ -200,6 +202,50 @@ class ServiceTemplateController extends Controller
 
             return redirect()->back()
                 ->withErrors(['delete_error' => 'Failed to delete service template. Please try again.']);
+        }
+    }
+
+    /**
+     * Duplicate an existing service template
+     */
+    public function duplicate(ServiceTemplate $serviceTemplate)
+    {
+        try {
+            // Create a duplicate with modified names
+            $duplicateData = $serviceTemplate->toArray();
+            
+            // Remove timestamps and id
+            unset($duplicateData['id'], $duplicateData['created_at'], $duplicateData['updated_at']);
+            
+            // Add "Copy of" prefix to names with timestamp to ensure uniqueness
+            $timestamp = now()->format('Y-m-d H:i');
+            $duplicateData['name_ar'] = 'نسخة من ' . $serviceTemplate->name_ar . ' (' . $timestamp . ')';
+            $duplicateData['name_en'] = 'Copy of ' . $serviceTemplate->name_en . ' (' . $timestamp . ')';
+            
+            // Set as inactive by default for review
+            $duplicateData['is_active'] = false;
+            
+            $duplicate = ServiceTemplate::create($duplicateData);
+            
+            \Log::info('Service template duplicated successfully', [
+                'original_id' => $serviceTemplate->id,
+                'duplicate_id' => $duplicate->id,
+                'original_name' => $serviceTemplate->name_en,
+                'duplicate_name' => $duplicate->name_en
+            ]);
+            
+            return redirect()
+                ->route('service-templates.edit', $duplicate)
+                ->with('success', 'Service template duplicated successfully! Please review and activate when ready.');
+                
+        } catch (\Exception $e) {
+            \Log::error('Failed to duplicate service template: ' . $e->getMessage(), [
+                'service_template_id' => $serviceTemplate->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return redirect()->back()
+                ->with('error', 'Failed to duplicate service template: ' . $e->getMessage());
         }
     }
 }

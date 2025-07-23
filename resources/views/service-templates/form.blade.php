@@ -196,12 +196,32 @@
                     <option value="USD" {{ old('currency', $serviceTemplate->currency ?? '') === 'USD' ? 'selected' : '' }}>USD</option>
                     <option value="SAR" {{ old('currency', $serviceTemplate->currency ?? '') === 'SAR' ? 'selected' : '' }}>SAR</option>
                     <option value="EGP" {{ old('currency', $serviceTemplate->currency ?? '') === 'EGP' ? 'selected' : '' }}>EGP</option>
+                    <option value="AUD" {{ old('currency', $serviceTemplate->currency ?? '') === 'AUD' ? 'selected' : '' }}>AUD</option>
                 </select>
                 @error('currency')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
 
+            <!-- Subscription Type -->
+            <div class="col-md-6">
+                <label class="form-label">Subscription Type</label>
+                <select class="form-select @error('subscription_type') is-invalid @enderror" 
+                        name="subscription_type" 
+                        required>
+                    <option value="">Select Subscription Type</option>
+                    <option value="one_time" {{ old('subscription_type', $serviceTemplate->subscription_type ?? '') === 'one_time' ? 'selected' : '' }}>One Time</option>
+                    <option value="monthly" {{ old('subscription_type', $serviceTemplate->subscription_type ?? '') === 'monthly' ? 'selected' : '' }}>Monthly</option>
+                    <option value="every_6_months" {{ old('subscription_type', $serviceTemplate->subscription_type ?? '') === 'every_6_months' ? 'selected' : '' }}>Every 6 Months</option>
+                    <option value="yearly" {{ old('subscription_type', $serviceTemplate->subscription_type ?? '') === 'yearly' ? 'selected' : '' }}>Yearly</option>
+                </select>
+                @error('subscription_type')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+        </div>
+
+        <div class="row mb-4">
             <!-- Status -->
             <div class="col-md-12">
                 <div class="d-flex gap-4">

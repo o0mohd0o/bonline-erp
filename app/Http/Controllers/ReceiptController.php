@@ -63,7 +63,7 @@ class ReceiptController extends Controller
             'receipt_number' => 'required|numeric|digits:6|unique:receipts,receipt_number,' . $id,
             'customer_id' => 'required|exists:customers,id',
             'amount' => 'required|numeric|min:0',
-            'currency' => 'required|in:USD,EGP,SAR',
+            'currency' => 'required|in:USD,EGP,SAR,AUD',
             'description' => 'nullable|string|max:255',
             'receipt_date' => 'required|date',
         ]);

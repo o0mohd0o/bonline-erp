@@ -72,6 +72,7 @@
                                         <option value="USD" {{ old('currency', $receipt->currency) === 'USD' ? 'selected' : '' }}>USD - US Dollar</option>
                                         <option value="SAR" {{ old('currency', $receipt->currency) === 'SAR' ? 'selected' : '' }}>SAR - Saudi Riyal</option>
                                         <option value="EGP" {{ old('currency', $receipt->currency) === 'EGP' ? 'selected' : '' }}>EGP - Egyptian Pound</option>
+                                        <option value="AUD" {{ old('currency', $receipt->currency) === 'AUD' ? 'selected' : '' }}>AUD - Australian Dollar</option>
                                     </select>
                                     @error('currency')
                                         <div class="invalid-feedback">{{ $message }}</div>

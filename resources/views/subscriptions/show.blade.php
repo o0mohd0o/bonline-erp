@@ -191,6 +191,20 @@
                                     <label class="form-label text-muted small">Default Price</label>
                                     <div class="fw-semibold">{{ $subscription->serviceTemplate->currency }} {{ number_format($subscription->serviceTemplate->default_price, 2) }}</div>
                                 </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label text-muted small">Service Type</label>
+                                    <div class="fw-semibold">
+                                        <span @class([
+                                            'badge rounded-pill',
+                                            'bg-info bg-opacity-10 text-info' => $subscription->serviceTemplate->subscription_type === 'one_time',
+                                            'bg-primary bg-opacity-10 text-primary' => $subscription->serviceTemplate->subscription_type === 'monthly',
+                                            'bg-warning bg-opacity-10 text-warning' => $subscription->serviceTemplate->subscription_type === 'every_6_months',
+                                            'bg-success bg-opacity-10 text-success' => $subscription->serviceTemplate->subscription_type === 'yearly'
+                                        ])>
+                                            {{ $subscription->serviceTemplate->getSubscriptionTypeLabel() }}
+                                        </span>
+                                    </div>
+                                </div>
                                 <div class="col-12 mb-3">
                                     <label class="form-label text-muted small">Description</label>
                                     <div class="fw-semibold">{{ $subscription->serviceTemplate->getDescription() }}</div>

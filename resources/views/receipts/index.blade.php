@@ -49,7 +49,8 @@
                         'options' => [
                             ['value' => 'USD', 'label' => 'USD - US Dollar'],
                             ['value' => 'EGP', 'label' => 'EGP - Egyptian Pound'],
-                            ['value' => 'SAR', 'label' => 'SAR - Saudi Riyal']
+                            ['value' => 'SAR', 'label' => 'SAR - Saudi Riyal'],
+                            ['value' => 'AUD', 'label' => 'AUD - Australian Dollar']
                         ]
                     ],
                     [

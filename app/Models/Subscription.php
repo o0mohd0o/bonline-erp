@@ -286,9 +286,10 @@ class Subscription extends Model
 
         // Fallback rates if API is unavailable (updated to current market rates)
         $fallbackRates = [
-            'USD' => ['EGP' => 49.4, 'SAR' => 3.75],
-            'SAR' => ['EGP' => 13.2, 'USD' => 0.27],
-            'EGP' => ['USD' => 0.0202, 'SAR' => 0.076]
+            'USD' => ['EGP' => 49.4, 'SAR' => 3.75, 'AUD' => 1.52],
+            'SAR' => ['EGP' => 13.2, 'USD' => 0.27, 'AUD' => 0.405],
+            'EGP' => ['USD' => 0.0202, 'SAR' => 0.076, 'AUD' => 0.031],
+            'AUD' => ['USD' => 0.66, 'SAR' => 2.47, 'EGP' => 32.6]
         ];
         
         return $fallbackRates[$fromCurrency][$toCurrency] ?? 1.0;

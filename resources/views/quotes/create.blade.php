@@ -478,7 +478,18 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <i class="{{ $template->icon }} fa-2x me-3 text-primary"></i>
                                     <h3 class="h6 mb-0 template-name">{{ $template->name_en }}</h3>
                                 </div>
-                                <p class="small text-muted mb-3 template-description">{{ $template->description_en }}</p>
+                                <p class="small text-muted mb-2 template-description">{{ $template->description_en }}</p>
+                                <div class="mb-3">
+                                    <span @class([
+                                        'badge badge-sm rounded-pill',
+                                        'bg-info bg-opacity-10 text-info' => $template->subscription_type === 'one_time',
+                                        'bg-primary bg-opacity-10 text-primary' => $template->subscription_type === 'monthly',
+                                        'bg-warning bg-opacity-10 text-warning' => $template->subscription_type === 'every_6_months',
+                                        'bg-success bg-opacity-10 text-success' => $template->subscription_type === 'yearly'
+                                    ])>
+                                        {{ $template->getSubscriptionTypeLabel() }}
+                                    </span>
+                                </div>
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span class="fw-bold">{{ number_format($template->default_price, 2) }} {{ $template->currency }}</span>
                                     <button type="button" class="btn btn-sm btn-outline-primary" 

@@ -171,6 +171,7 @@
                                     <option value="USD" {{ (old('currency') ?? $subscription->currency) == 'USD' ? 'selected' : '' }}>USD</option>
                                     <option value="SAR" {{ (old('currency') ?? $subscription->currency) == 'SAR' ? 'selected' : '' }}>SAR</option>
                                     <option value="EGP" {{ (old('currency') ?? $subscription->currency) == 'EGP' ? 'selected' : '' }}>EGP</option>
+                                    <option value="AUD" {{ (old('currency') ?? $subscription->currency) == 'AUD' ? 'selected' : '' }}>AUD</option>
                                 </select>
                                 @error('currency')
                                     <div class="invalid-feedback">{{ $message }}</div>

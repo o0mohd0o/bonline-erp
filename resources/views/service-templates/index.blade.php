@@ -35,7 +35,18 @@
                         'options' => [
                             ['value' => 'USD', 'label' => 'USD - US Dollar'],
                             ['value' => 'EGP', 'label' => 'EGP - Egyptian Pound'],
-                            ['value' => 'SAR', 'label' => 'SAR - Saudi Riyal']
+                            ['value' => 'SAR', 'label' => 'SAR - Saudi Riyal'],
+                            ['value' => 'AUD', 'label' => 'AUD - Australian Dollar']
+                        ]
+                    ],
+                    [
+                        'id' => 'subscriptionTypeFilter',
+                        'placeholder' => 'Filter by Type',
+                        'options' => [
+                            ['value' => 'one_time', 'label' => 'One Time'],
+                            ['value' => 'monthly', 'label' => 'Monthly'],
+                            ['value' => 'every_6_months', 'label' => 'Every 6 Months'],
+                            ['value' => 'yearly', 'label' => 'Yearly']
                         ]
                     ]
                 ]"
@@ -45,7 +56,7 @@
             <!-- Table Card -->
             <div class="card shadow-sm">
                 <div class="card-body p-0">
-                    <x-table :headers="['Icon', 'Name', 'Description', 'Price', 'Currency', 'Status', 'Actions']">
+                    <x-table :headers="['Icon', 'Name', 'Description', 'Price', 'Currency', 'Type', 'Status', 'Actions']">
                         @forelse($serviceTemplates as $template)
                             <tr>
                                 <td>
@@ -55,6 +66,17 @@
                                 <td>{{ Str::limit($template->getDescription(), 100) }}</td>
                                 <td class="fw-medium">{{ number_format($template->default_price, 2) }}</td>
                                 <td data-currencyFilter="{{ $template->currency }}">{{ $template->currency }}</td>
+                                <td data-subscriptionTypeFilter="{{ $template->subscription_type }}">
+                                    <span @class([
+                                        'badge rounded-pill',
+                                        'bg-info bg-opacity-10 text-info' => $template->subscription_type === 'one_time',
+                                        'bg-primary bg-opacity-10 text-primary' => $template->subscription_type === 'monthly',
+                                        'bg-warning bg-opacity-10 text-warning' => $template->subscription_type === 'every_6_months',
+                                        'bg-success bg-opacity-10 text-success' => $template->subscription_type === 'yearly'
+                                    ])>
+                                        {{ $template->getSubscriptionTypeLabel() }}
+                                    </span>
+                                </td>
                                 <td data-statusFilter="{{ $template->is_active }}">
                                     <span @class([
                                         'badge rounded-pill',
@@ -70,6 +92,14 @@
                                             href="{{ route('service-templates.edit', $template) }}"
                                             icon="edit"
                                             title="Edit Template"
+                                        />
+                                        <x-table.action-button 
+                                            href="{{ route('service-templates.duplicate', $template) }}"
+                                            method="POST"
+                                            icon="copy"
+                                            title="Duplicate Template"
+                                            :confirm="true"
+                                            confirmMessage="Duplicate this service template?"
                                         />
                                         <x-table.action-button 
                                             href="{{ route('service-templates.destroy', $template) }}"

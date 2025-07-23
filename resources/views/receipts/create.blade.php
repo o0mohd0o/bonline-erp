@@ -119,6 +119,7 @@ window.toggleLanguage = function() {
                                         <option value="EGP" {{ old('currency') == 'EGP' ? 'selected' : '' }}>EGP - Egyptian Pound</option>
                                         <option value="USD" {{ old('currency') == 'USD' ? 'selected' : '' }}>USD - US Dollar</option>
                                         <option value="SAR" {{ old('currency') == 'SAR' ? 'selected' : '' }}>SAR - Saudi Riyal</option>
+                                        <option value="AUD" {{ old('currency') == 'AUD' ? 'selected' : '' }}>AUD - Australian Dollar</option>
                                     </select>
                                     @error('currency')
                                         <div class="invalid-feedback">{{ $message }}</div>

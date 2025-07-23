@@ -184,6 +184,19 @@
                                                             <i class="fas fa-check-circle me-1"></i>VAT Free Service
                                                         </div>
                                                     @endif
+                                                    @if($item->serviceTemplate && $item->serviceTemplate->subscription_type)
+                                                        <div class="small mb-1">
+                                                            <span @class([
+                                                                'badge badge-sm rounded-pill',
+                                                                'bg-info bg-opacity-10 text-info' => $item->serviceTemplate->subscription_type === 'one_time',
+                                                                'bg-primary bg-opacity-10 text-primary' => $item->serviceTemplate->subscription_type === 'monthly',
+                                                                'bg-warning bg-opacity-10 text-warning' => $item->serviceTemplate->subscription_type === 'every_6_months',
+                                                                'bg-success bg-opacity-10 text-success' => $item->serviceTemplate->subscription_type === 'yearly'
+                                                            ])>
+                                                                {{ $item->serviceTemplate->getSubscriptionTypeLabel() }}
+                                                            </span>
+                                                        </div>
+                                                    @endif
                                                     @if($item->description)
                                                         <div class="text-muted mb-1">{{ $item->description }}</div>
                                                     @endif

@@ -484,7 +484,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <h6 class="mb-0 template-name">{{ $template->name_ar }}</h6>
                 </div>
-                <p class="small text-muted mb-3 template-description">{{ $template->description_ar }}</p>
+                <p class="small text-muted mb-2 template-description">{{ $template->description_ar }}</p>
+                <div class="mb-3">
+                    <span @class([
+                        'badge badge-sm rounded-pill',
+                        'bg-info bg-opacity-10 text-info' => $template->subscription_type === 'one_time',
+                        'bg-primary bg-opacity-10 text-primary' => $template->subscription_type === 'monthly',
+                        'bg-warning bg-opacity-10 text-warning' => $template->subscription_type === 'every_6_months',
+                        'bg-success bg-opacity-10 text-success' => $template->subscription_type === 'yearly'
+                    ])>
+                        {{ $template->getSubscriptionTypeLabel() }}
+                    </span>
+                </div>
                 <button type="button" class="btn btn-outline-primary btn-sm w-100"
                     onclick="addTemplateService({{ $template->id }})">
                     <i class="fas fa-plus me-2"></i>Add Service

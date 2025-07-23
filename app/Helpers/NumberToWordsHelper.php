@@ -21,6 +21,7 @@ class NumberToWordsHelper
             'SAR' => 'ريال سعودي',
             'USD' => 'دولار أمريكي',
             'EGP' => 'جنيه مصري',
+            'AUD' => 'دولار أسترالي',
             default => 'عملة غير معروفة', // Default if currency is unknown
         };
 
