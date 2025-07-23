@@ -39,14 +39,18 @@
                 size: A4;
             }
 
-            /* Optimize spacing */
+                        /* Optimize spacing */
             .container {
                 margin: 0 !important;
-                padding: 10px !important;
+                padding: 8px !important;
             }
-
+            
             .mb-4 {
-                margin-bottom: 0.75rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+            
+            .mb-1 {
+                margin-bottom: 0.25rem !important;
             }
 
             .p-3 {
@@ -80,14 +84,44 @@
             .table td, .table th {
                 padding: 0.25rem !important;
             }
-
-            /* Ensure content fits on one page */
-            .row {
+            
+            /* Control table header/footer repetition */
+            .table thead {
+                display: table-header-group;
+            }
+            
+            /* Prevent footer from showing on every page - only on last page */
+            .table tfoot {
+                display: table-row-group !important;
+                break-before: avoid;
+            }
+            
+            /* Ensure totals appear only on last page */
+            .table tfoot tr {
                 break-inside: avoid;
+                page-break-inside: avoid;
             }
 
-            .table-responsive {
+            /* Allow content to break naturally */
+            .header-row {
                 break-inside: avoid;
+            }
+            
+            .customer-info-row {
+                break-after: avoid;
+            }
+            
+            .table-responsive {
+                break-inside: auto;
+            }
+            
+            .table tbody tr {
+                break-inside: avoid;
+            }
+            
+            /* Ensure services section starts on same page as customer info */
+            .services-section {
+                break-before: avoid;
             }
 
             /* Force background colors */

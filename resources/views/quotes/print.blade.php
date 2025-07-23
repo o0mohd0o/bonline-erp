@@ -42,11 +42,15 @@
             /* Optimize spacing */
             .container {
                 margin: 0 !important;
-                padding: 10px !important;
+                padding: 8px !important;
             }
             
             .mb-4 {
-                margin-bottom: 0.75rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+            
+            .mb-1 {
+                margin-bottom: 0.25rem !important;
             }
             
             .p-3 {
@@ -81,13 +85,44 @@
                 padding: 0.25rem !important;
             }
             
-            /* Ensure content fits on one page */
-            .row {
+            /* Control table header/footer repetition */
+            .table thead {
+                display: table-header-group;
+            }
+            
+            /* Prevent footer from showing on every page - only on last page */
+            .table tfoot {
+                display: table-row-group !important;
+                break-before: avoid;
+            }
+            
+            /* Allow content to break naturally */
+            .header-row {
                 break-inside: avoid;
             }
             
+            .customer-info-row {
+                break-after: avoid;
+            }
+            
             .table-responsive {
+                break-inside: auto;
+            }
+            
+            .table tbody tr {
                 break-inside: avoid;
+            }
+            
+            /* Prevent table footer from repeating on each page */
+            .table tfoot {
+                display: table-footer-group;
+                break-inside: avoid;
+            }
+            
+            /* Ensure totals appear only on last page */
+            .table tfoot tr {
+                break-inside: avoid;
+                page-break-inside: avoid;
             }
             
             /* Force background colors */
@@ -103,8 +138,18 @@
             }
             
             /* Ensure the page doesn't break in awkward places */
-            .row, .table-responsive, .col-6 { 
+            .col-6 { 
                 break-inside: avoid; 
+            }
+            
+            /* Allow table to break across pages if needed */
+            .services-table {
+                break-inside: auto;
+            }
+            
+            /* Ensure services section starts on same page as customer info */
+            .services-section {
+                break-before: avoid;
             }
             
             /* Reduce some spacing for print */
@@ -143,7 +188,7 @@
 
     <div class="container py-4">
         <!-- Header with Logo and Quote Info -->
-        <div class="row align-items-center mb-4">
+        <div class="row align-items-center mb-4 header-row">
             <div class="col-6">
                 <img src="{{ asset('assets/images/bonline-logo-en.svg') }}" alt="Bonline Logo" style="height: 45px;">
             </div>
@@ -164,7 +209,7 @@
         </div>
 
         <!-- Two Column Layout -->
-        <div class="row g-4 mb-1">
+        <div class="row g-4 mb-1 customer-info-row">
             <!-- Left Column: Customer Info -->
             <div class="col-6">
                 <div class="bg-light rounded-3 p-3 h-100">
@@ -228,9 +273,9 @@
         </div>
 
         <!-- Services Section -->
-        <div class="mb-4">
+        <div class="mb-4 services-section">
             <h6 class="text-primary mb-3">Services</h6>
-            <div class="table-responsive">
+            <div class="table-responsive services-table">
                 <table class="table table-sm">
                     <thead class="table-light">
                         <tr>
@@ -320,34 +365,6 @@
             </div>
         </div>
 
-        <!-- Totals -->
-        <!-- <div class="row justify-content-end">
-            <div class="col-5">
-                <div class="bg-light rounded-3 p-3">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Subtotal:</span>
-                        <span class="fw-medium">{{ number_format($quote->subtotal, 2) }} {{ $quote->currency }}</span>
-                    </div>
-                    @if($quote->discount_amount > 0 || $quote->discount_percentage > 0)
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">
-                            Discount{{ $quote->discount_percentage > 0 ? ' (' . number_format($quote->discount_percentage, 1) . '%)' : '' }}:
-                        </span>
-                        <span class="text-danger">-{{ number_format($quote->discount_amount, 2) }} {{ $quote->currency }}</span>
-                    </div>
-                    @endif
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">VAT ({{ number_format($quote->vat_rate, 0) }}%):</span>
-                        <span class="fw-medium">{{ number_format($quote->vat_amount, 2) }} {{ $quote->currency }}</span>
-                    </div>
-                    <hr class="my-2">
-                    <div class="d-flex justify-content-between">
-                        <span class="fw-medium">Total:</span>
-                        <span class="fw-bold">{{ number_format($quote->total, 2) }} {{ $quote->currency }}</span>
-                    </div>
-                </div>
-            </div>
-        </div> -->
 
         <!-- Terms -->
         @if($quote->terms->isNotEmpty())
