@@ -54,6 +54,7 @@ class SubscriptionController extends Controller
                 'notify_before_days' => 'required|integer|min:1|max:90',
                 'auto_renew' => 'boolean',
                 'notes' => 'nullable|string',
+                'website' => 'nullable|url|max:255',
             ]);
 
             $subscription = new Subscription();
@@ -68,6 +69,7 @@ class SubscriptionController extends Controller
             $subscription->notify_before_days = $request->notify_before_days;
             $subscription->auto_renew = $request->boolean('auto_renew');
             $subscription->notes = $request->notes;
+            $subscription->website = $request->website;
             
             // Calculate end date and next billing date
             $subscription->end_date = $subscription->calculateEndDate($request->start_date);
@@ -131,6 +133,7 @@ class SubscriptionController extends Controller
             'status' => 'required|in:active,inactive,cancelled,expired',
             'auto_renew' => 'boolean',
             'notes' => 'nullable|string',
+            'website' => 'nullable|url|max:255',
         ]);
 
         $oldStartDate = $subscription->start_date;
@@ -147,6 +150,7 @@ class SubscriptionController extends Controller
         $subscription->status = $request->status;
         $subscription->auto_renew = $request->boolean('auto_renew');
         $subscription->notes = $request->notes;
+        $subscription->website = $request->website;
 
         // Recalculate end date if start date or billing cycle changed
         if ($oldStartDate != $request->start_date || $oldBillingCycle != $request->billing_cycle) {
@@ -192,12 +196,14 @@ class SubscriptionController extends Controller
      */
     public function renew(Subscription $subscription)
     {
-        if ($subscription->status !== Subscription::STATUS_ACTIVE) {
+        // Allow renewing active or expired subscriptions
+        if (!in_array($subscription->status, [Subscription::STATUS_ACTIVE, Subscription::STATUS_EXPIRED])) {
             return redirect()->back()
-                ->with('error', 'Only active subscriptions can be renewed.');
+                ->with('error', 'Only active or expired subscriptions can be renewed.');
         }
 
-        $newStartDate = $subscription->end_date;
+        // Start the new period the day after the current end date to avoid overlap
+        $newStartDate = $subscription->end_date->copy()->addDay();
         $newEndDate = $subscription->calculateEndDate($newStartDate);
 
         $subscription->start_date = $newStartDate;
@@ -205,6 +211,8 @@ class SubscriptionController extends Controller
         $subscription->next_billing_date = $newEndDate;
         $subscription->last_notification_sent = null;
         $subscription->expiry_notification_sent = null;
+        // Ensure status is set to active upon renewal
+        $subscription->status = Subscription::STATUS_ACTIVE;
         $subscription->save();
 
         return redirect()->back()

@@ -78,7 +78,7 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h6 class="card-title mb-1">Expired</h6>
-                                    <h3 class="mb-0">{{ $subscriptions->where('status', 'expired')->count() }}</h3>
+                                    <h3 class="mb-0">{{ $subscriptions->filter(function($s){ return $s->hasExpired(); })->count() }}</h3>
                                 </div>
                                 <i class="fas fa-times-circle fa-2x opacity-75"></i>
                             </div>
@@ -103,46 +103,56 @@
             <!-- Table Card -->
             <div class="card shadow-sm">
                 <div class="card-body p-0">
-                    <x-table :headers="['Subscription #', 'Customer', 'Service', 'Billing Cycle', 'Price', 'Status', 'End Date', 'Actions']">
+                    <div class="table-responsive">
+                        <x-table :headers="['Subscription #', 'Customer', 'Service', 'Billing Cycle', 'Price', 'Website', 'Status', 'End Date', 'Actions']" class="table-nowrap">
                         @forelse($subscriptions as $subscription)
                         <tr>
-                            <td data-billingCycleFilter="{{ $subscription->billing_cycle }}" data-statusFilter="{{ $subscription->status }}">
+                            <td class="subscription-number" data-billingCycleFilter="{{ $subscription->billing_cycle }}" data-statusFilter="{{ $subscription->status }}">
                                 <div class="fw-semibold text-primary">{{ $subscription->subscription_number }}</div>
                             </td>
-                            <td>
+                            <td class="customer-info">
                                 <div class="fw-semibold">{{ $subscription->customer->full_name }}</div>
                                 <div class="text-muted small">{{ $subscription->customer->email }}</div>
                             </td>
-                            <td>
+                            <td class="service-info">
                                 <div class="fw-semibold">{{ $subscription->serviceTemplate->getName() }}</div>
                                 <div class="text-muted small">{{ Str::limit($subscription->serviceTemplate->getDescription(), 50) }}</div>
                             </td>
-                            <td>
+                            <td class="billing-cycle">
                                 <span class="badge bg-info">{{ $subscription->billing_cycle_display }}</span>
                             </td>
-                            <td>
+                            <td class="price-info">
                                 <div class="fw-semibold">{{ $subscription->currency }} {{ number_format($subscription->price, 2) }}</div>
                             </td>
-                            <td>
-                                @if($subscription->status === 'active')
-                                    @if($subscription->isExpiringSoon())
-                                        <span class="badge bg-warning">Expiring Soon</span>
-                                    @else
-                                        <span class="badge bg-success">{{ $subscription->status_display }}</span>
-                                    @endif
-                                @elseif($subscription->status === 'expired')
-                                    <span class="badge bg-danger">{{ $subscription->status_display }}</span>
-                                @elseif($subscription->status === 'cancelled')
+                            <td class="website-info">
+                                @if($subscription->website)
+                                    <a href="{{ $subscription->website }}" target="_blank" class="text-decoration-none d-block">
+                                        <i class="fas fa-external-link-alt text-primary me-1"></i>
+                                        <span class="website-url">{{ $subscription->website }}</span>
+                                    </a>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td class="status-info">
+                                @php($expiredByDate = $subscription->hasExpired())
+                                @if($expiredByDate)
+                                    <span class="badge bg-danger">Expired</span>
+                                @elseif($subscription->isExpiringSoon())
+                                    <span class="badge bg-warning">Expiring Soon</span>
+                                @elseif($subscription->status === 'active')
+                                    <span class="badge bg-success">{{ $subscription->status_display }}</span>
+                                @elseif(in_array($subscription->status, ['cancelled', 'inactive']))
                                     <span class="badge bg-secondary">{{ $subscription->status_display }}</span>
                                 @else
                                     <span class="badge bg-secondary">{{ $subscription->status_display }}</span>
                                 @endif
                             </td>
-                            <td>
+                            <td class="end-date">
                                 <div class="fw-semibold">{{ $subscription->end_date->format('M j, Y') }}</div>
                                 <div class="text-muted small">{{ $subscription->end_date->diffForHumans() }}</div>
                             </td>
-                            <td>
+                            <td class="actions-column">
                                 <x-table.actions>
                                     <x-table.action-button
                                         href="{{ route('subscriptions.show', $subscription) }}"
@@ -162,7 +172,8 @@
                                         Edit
                                     </x-table.action-button>
 
-                                    @if($subscription->status === 'active')
+                                    @php($canRenew = $subscription->status === 'active' || $subscription->hasExpired())
+                                    @if($canRenew)
                                         <form action="{{ route('subscriptions.renew', $subscription) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('PATCH')
@@ -209,7 +220,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5">
+                            <td colspan="9" class="text-center py-5">
                                 <div class="text-muted">
                                     <i class="fas fa-calendar-times fa-3x mb-3"></i>
                                     <p class="mb-0">No subscriptions found.</p>
@@ -220,10 +231,10 @@
                             </td>
                         </tr>
                         @endforelse
-                    </x-table>
+                        </x-table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 @endsection 

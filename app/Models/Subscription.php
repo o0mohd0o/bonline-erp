@@ -39,6 +39,7 @@ class Subscription extends Model
         'expiry_notification_sent',
         'auto_renew',
         'notes',
+        'website',
     ];
 
     protected $casts = [
@@ -97,17 +98,17 @@ class Subscription extends Model
      */
     public function calculateEndDate($startDate = null)
     {
-        $date = $startDate ? Carbon::parse($startDate) : Carbon::parse($this->start_date);
+        $baseDate = Carbon::parse($startDate ?? $this->start_date)->copy()->startOfDay();
 
         switch ($this->billing_cycle) {
             case self::BILLING_CYCLE_MONTHLY:
-                return $date->addMonth();
+                return $baseDate->addMonthNoOverflow()->subDay();
             case self::BILLING_CYCLE_EVERY_6_MONTHS:
-                return $date->addMonths(6);
+                return $baseDate->addMonthsNoOverflow(6)->subDay();
             case self::BILLING_CYCLE_YEARLY:
-                return $date->addYear();
+                return $baseDate->addYear()->subDay();
             default:
-                return $date->addMonth();
+                return $baseDate->addMonthNoOverflow()->subDay();
         }
     }
 
@@ -116,8 +117,16 @@ class Subscription extends Model
      */
     public function isExpiringSoon()
     {
-        $notificationDate = Carbon::parse($this->end_date)->subDays($this->notify_before_days);
-        return Carbon::now() >= $notificationDate && Carbon::now() < $this->end_date;
+        if (!$this->end_date) {
+            return false;
+        }
+
+        $endOfDay = $this->end_date->copy()->endOfDay();
+        $notificationDays = max((int) $this->notify_before_days, 0);
+        $notificationDate = $this->end_date->copy()->subDays($notificationDays)->startOfDay();
+        $now = Carbon::now();
+
+        return $now >= $notificationDate && $now <= $endOfDay;
     }
 
     /**
@@ -125,7 +134,10 @@ class Subscription extends Model
      */
     public function hasExpired()
     {
-        return Carbon::now() > $this->end_date;
+        if (!$this->end_date) {
+            return false;
+        }
+        return Carbon::now()->greaterThan($this->end_date->copy()->endOfDay());
     }
 
     /**
@@ -188,9 +200,10 @@ class Subscription extends Model
      */
     public function scopeExpiringSoon($query)
     {
+        $today = Carbon::today();
         return $query->where('status', self::STATUS_ACTIVE)
-            ->where('end_date', '<=', Carbon::now()->addDays(15))
-            ->where('end_date', '>', Carbon::now());
+            ->whereDate('end_date', '>=', $today)
+            ->whereDate('end_date', '<=', $today->copy()->addDays(15));
     }
 
     /**
@@ -198,7 +211,8 @@ class Subscription extends Model
      */
     public function scopeExpired($query)
     {
-        return $query->where('end_date', '<', Carbon::now());
+        // Consider expired only if end_date is before today (inclusive end-of-day semantics)
+        return $query->whereDate('end_date', '<', Carbon::today());
     }
 
     /**

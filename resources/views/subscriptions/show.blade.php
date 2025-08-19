@@ -11,7 +11,8 @@
                     <p class="text-muted mb-0">Subscription #{{ $subscription->subscription_number }}</p>
                 </div>
                 <div class="d-flex gap-2">
-                    @if($subscription->status === 'active')
+                    @php($canRenew = $subscription->status === 'active' || $subscription->hasExpired())
+                    @if($canRenew)
                         <form action="{{ route('subscriptions.renew', $subscription) }}" method="POST" class="d-inline">
                             @csrf
                             @method('PATCH')
@@ -41,19 +42,19 @@
             </div>
 
             <!-- Status Alert -->
-            @if($subscription->isExpiringSoon())
-                <div class="alert alert-warning d-flex align-items-center mb-4">
-                    <i class="fas fa-exclamation-triangle me-3"></i>
-                    <div>
-                        <strong>Expiring Soon!</strong> This subscription will expire on {{ $subscription->end_date->format('M j, Y') }} 
-                        ({{ $subscription->end_date->diffForHumans() }}).
-                    </div>
-                </div>
-            @elseif($subscription->hasExpired())
+            @if($subscription->hasExpired())
                 <div class="alert alert-danger d-flex align-items-center mb-4">
                     <i class="fas fa-times-circle me-3"></i>
                     <div>
                         <strong>Expired!</strong> This subscription expired on {{ $subscription->end_date->format('M j, Y') }} 
+                        ({{ $subscription->end_date->diffForHumans() }}).
+                    </div>
+                </div>
+            @elseif($subscription->isExpiringSoon())
+                <div class="alert alert-warning d-flex align-items-center mb-4">
+                    <i class="fas fa-exclamation-triangle me-3"></i>
+                    <div>
+                        <strong>Expiring Soon!</strong> This subscription will expire on {{ $subscription->end_date->format('M j, Y') }} 
                         ({{ $subscription->end_date->diffForHumans() }}).
                     </div>
                 </div>
@@ -78,15 +79,14 @@
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label text-muted small">Status</label>
                                     <div>
-                                        @if($subscription->status === 'active')
-                                            @if($subscription->isExpiringSoon())
-                                                <span class="badge bg-warning fs-6">Expiring Soon</span>
-                                            @else
-                                                <span class="badge bg-success fs-6">{{ $subscription->status_display }}</span>
-                                            @endif
-                                        @elseif($subscription->status === 'expired')
-                                            <span class="badge bg-danger fs-6">{{ $subscription->status_display }}</span>
-                                        @elseif($subscription->status === 'cancelled')
+                                        @php($expiredByDate = $subscription->hasExpired())
+                                        @if($expiredByDate)
+                                            <span class="badge bg-danger fs-6">Expired</span>
+                                        @elseif($subscription->isExpiringSoon())
+                                            <span class="badge bg-warning fs-6">Expiring Soon</span>
+                                        @elseif($subscription->status === 'active')
+                                            <span class="badge bg-success fs-6">{{ $subscription->status_display }}</span>
+                                        @elseif(in_array($subscription->status, ['cancelled', 'inactive']))
                                             <span class="badge bg-secondary fs-6">{{ $subscription->status_display }}</span>
                                         @else
                                             <span class="badge bg-secondary fs-6">{{ $subscription->status_display }}</span>
@@ -124,6 +124,17 @@
                                         @endif
                                     </div>
                                 </div>
+                                @if($subscription->website)
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label text-muted small">Website</label>
+                                        <div class="fw-semibold">
+                                            <a href="{{ $subscription->website }}" target="_blank" class="text-decoration-none">
+                                                {{ $subscription->website }}
+                                                <i class="fas fa-external-link-alt ms-1 small"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                             
                             @if($subscription->notes)

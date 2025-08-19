@@ -88,6 +88,79 @@
                 margin: 0.25rem 0;
             }
         }
+
+        /* Subscriptions Table Responsive Styling */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-nowrap {
+            min-width: 1200px;
+        }
+
+        .table-nowrap td,
+        .table-nowrap th {
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        /* Column specific widths */
+        .subscription-number {
+            min-width: 140px;
+        }
+
+        .customer-info {
+            min-width: 200px;
+        }
+
+        .service-info {
+            min-width: 220px;
+        }
+
+        .billing-cycle {
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .price-info {
+            min-width: 100px;
+            text-align: right;
+        }
+
+        .website-info {
+            min-width: 180px;
+            max-width: 180px;
+        }
+
+        .website-info .website-url {
+            display: inline-block;
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        .status-info {
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .end-date {
+            min-width: 140px;
+        }
+
+        .actions-column {
+            min-width: 280px;
+        }
+
+        @media (max-width: 768px) {
+            .table-responsive {
+                border: 1px solid #dee2e6;
+                border-radius: 0.375rem;
+            }
+        }
     </style>
 </head>
 <body>

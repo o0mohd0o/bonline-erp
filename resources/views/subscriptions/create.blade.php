@@ -235,6 +235,18 @@
                                     </label>
                                 </div>
 
+                                <div class="mb-3">
+                                    <label for="website" class="form-label">Website</label>
+                                    <input type="url" name="website" id="website" 
+                                           class="form-control @error('website') is-invalid @enderror" 
+                                           value="{{ old('website') }}" 
+                                           placeholder="https://example.com">
+                                    @error('website')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Optional: Customer's website URL</div>
+                                </div>
+
                                 <div class="mb-0">
                                     <label for="notes" class="form-label">Notes</label>
                                     <textarea name="notes" id="notes" rows="3" 
