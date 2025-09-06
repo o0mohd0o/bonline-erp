@@ -22,7 +22,7 @@ class InvoiceController extends Controller
     public function create()
     {
         $customers = Customer::orderBy('first_name')->get();
-        $serviceTemplates = ServiceTemplate::where('is_active', true)->get();
+        $serviceTemplates = ServiceTemplate::orderBy('name_en')->get();
         return view('invoices.create', compact('customers', 'serviceTemplates'));
     }    
 

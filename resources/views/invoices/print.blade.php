@@ -351,11 +351,12 @@
                         @if($invoice->discount_amount > 0 || $invoice->discount_percentage > 0)
                         <tr>
                             <td colspan="4" class="text-end">
-                                @if($invoice->discount_amount > 0)
-                                    Discount:
-                                @elseif($invoice->discount_percentage > 0)
-                                    Discount ({{ number_format($invoice->discount_percentage, 2) }}%)
-                                @endif
+                                Discount{{ $invoice->discount_percentage > 0 
+                                    ? ' (' . number_format($invoice->discount_percentage, 2) . '%)'
+                                    : (($invoice->discount_amount > 0 && $invoice->subtotal > 0)
+                                        ? ' (' . number_format(($invoice->discount_amount / $invoice->subtotal) * 100, 2) . '%)'
+                                        : '')
+                                }}:
                             </td>
                             <td class="text-end text-danger">-{{ number_format($invoice->discount_amount, 2) }} {{ $invoice->currency }}</td>
                         </tr>

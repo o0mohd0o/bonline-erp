@@ -5,7 +5,7 @@
 // Initialize variables and functions in the global scope
 window.itemCount = 0;
 window.serviceTemplates = {!! json_encode($serviceTemplates) !!};
-window.currentLang = 'ar'; // Default language for modal
+window.currentLang = 'en'; // Default language for modal
 
 window.toggleTemplateLang = function() {
     window.currentLang = window.currentLang === 'ar' ? 'en' : 'ar';
@@ -61,6 +61,7 @@ window.addInvoiceItem = function(data = null) {
     if (!container) return;
 
     const selectedCurrency = document.querySelector('input[name="currency"]').value;
+    const textDir = window.currentLang === 'ar' ? 'rtl' : 'ltr';
     const itemHtml = `
         <div class="card shadow-sm border mb-3 item-card" id="item-${window.itemCount}">
             <div class="card-body">
@@ -74,7 +75,7 @@ window.addInvoiceItem = function(data = null) {
                     <div class="col-md-6">
                         <label class="form-label small text-muted">Service Name</label>
                         <input type="text" name="items[${window.itemCount}][service_name]" class="form-control" 
-                            value="${data ? data.service_name : ''}" required dir="rtl">
+                            value="${data ? data.service_name : ''}" required dir="${textDir}">
                         ${data && data.service_template_id ? `
                             <input type="hidden" name="items[${window.itemCount}][service_template_id]" value="${data.service_template_id}">
                         ` : ''}
@@ -92,12 +93,12 @@ window.addInvoiceItem = function(data = null) {
                     <div class="col-12">
                         <label class="form-label small text-muted">Description</label>
                         <textarea name="items[${window.itemCount}][description]" class="form-control" rows="2" 
-                            dir="rtl">${data ? data.description : ''}</textarea>
+                            dir="${textDir}">${data ? data.description : ''}</textarea>
                     </div>
                     <div class="col-12">
                         <label class="form-label small text-muted">Details (One per line)</label>
                         <textarea name="items[${window.itemCount}][details]" class="form-control" rows="3"
-                            dir="rtl" placeholder="Enter details, one per line">${data && data.details ? data.details.join('\n') : ''}</textarea>
+                            dir="${textDir}" placeholder="Enter details, one per line">${data && data.details ? data.details.join('\n') : ''}</textarea>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label small text-muted">Quantity</label>
@@ -482,9 +483,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="bg-light rounded-3 p-2 me-3">
                         <i class="{{ $template->icon }} text-primary"></i>
                     </div>
-                    <h6 class="mb-0 template-name">{{ $template->name_ar }}</h6>
+                    <h6 class="mb-0 template-name">{{ $template->name_en }}</h6>
                 </div>
-                <p class="small text-muted mb-2 template-description">{{ $template->description_ar }}</p>
+                <p class="small text-muted mb-2 template-description">{{ $template->description_en }}</p>
                 <div class="mb-3">
                     <span @class([
                         'badge badge-sm rounded-pill',
@@ -495,6 +496,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     ])>
                         {{ $template->getSubscriptionTypeLabel() }}
                     </span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="text-muted small">
+                        <i class="fas fa-tag me-1"></i>
+                        {{ $template->currency }} {{ number_format($template->default_price, 2) }}
+                    </div>
                 </div>
                 <button type="button" class="btn btn-outline-primary btn-sm w-100"
                     onclick="addTemplateService({{ $template->id }})">
