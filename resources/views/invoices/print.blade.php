@@ -209,6 +209,15 @@
                         {{ ucfirst($invoice->invoice_type) }} Invoice
                     </span>
                 </div>
+                @if(isset($exchangeRate) && $exchangeRate && isset($originalCurrency) && $originalCurrency !== $printCurrency)
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="fas fa-exchange-alt me-1"></i>
+                            Converted from {{ $originalCurrency }} to {{ $printCurrency }} 
+                            (Rate: 1 {{ $originalCurrency }} = {{ number_format($exchangeRate, 4) }} {{ $printCurrency }})
+                        </small>
+                    </div>
+                @endif
             </div>
         </div>
 

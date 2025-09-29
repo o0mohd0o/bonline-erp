@@ -26,7 +26,7 @@ class CustomerController extends Controller
         // Validate shared fields
         $request->validate([
             'customer_type' => 'required|in:individual,company',
-            'email' => 'required|email|unique:customers,email',
+            'email' => 'required|email',
             'phone' => 'nullable|string|max:30',
             'address' => 'nullable|string',
             'status' => 'required|in:active,inactive',
@@ -89,7 +89,7 @@ class CustomerController extends Controller
         // Validate shared fields
         $request->validate([
             'customer_type' => 'required|in:individual,company',
-            'email' => 'required|email|unique:customers,email,' . $id,
+            'email' => 'required|email',
             'phone' => 'nullable|string|max:30',
             'address' => 'nullable|string',
             'status' => 'required|in:active,inactive',

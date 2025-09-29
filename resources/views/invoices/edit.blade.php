@@ -5,6 +5,32 @@
 // Initialize variables and functions in the global scope
 window.itemCount = {{ count($invoice->items) }};
 window.serviceTemplates = {!! json_encode($serviceTemplates) !!};
+window.currentLang = 'en'; // Default language for modal
+
+window.toggleTemplateLang = function() {
+    window.currentLang = window.currentLang === 'ar' ? 'en' : 'ar';
+    // Update the button label
+    const btn = document.getElementById('templateLangToggleBtn');
+    btn.innerHTML = `<i class="fas fa-language me-2"></i>${window.currentLang === 'ar' ? 'English' : 'عربي'}`;
+    // Update all template cards
+    document.querySelectorAll('.template-name').forEach((el, idx) => {
+        const template = window.serviceTemplates[idx];
+        el.textContent = template[`name_${window.currentLang}`];
+    });
+    document.querySelectorAll('.template-description').forEach((el, idx) => {
+        const template = window.serviceTemplates[idx];
+        el.textContent = template[`description_${window.currentLang}`];
+    });
+    document.querySelectorAll('.template-details').forEach((el, idx) => {
+        const template = window.serviceTemplates[idx];
+        const details = template[`details_${window.currentLang}`];
+        if (details && details.length > 0) {
+            el.innerHTML = details.map(detail => `<li>${detail}</li>`).join('');
+        } else {
+            el.innerHTML = '';
+        }
+    });
+};
 
 window.addCustomService = function() {
     window.addInvoiceItem();
@@ -18,9 +44,9 @@ window.addTemplateService = function(templateId) {
     document.querySelector('input[name="currency"]').value = template.currency;
     
     window.addInvoiceItem({
-        service_name: template.name_ar,
-        description: template.description_ar,
-        details: template.details_ar,
+        service_name: template[`name_${window.currentLang}`],
+        description: template[`description_${window.currentLang}`],
+        details: template[`details_${window.currentLang}`],
         icon: template.icon,
         unit_price: template.default_price,
         quantity: 1,
@@ -476,7 +502,12 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="modal-content">
             <div class="modal-header border-0 pb-0">
                 <h5 class="modal-title">Add Service from Templates</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" id="templateLangToggleBtn" class="btn btn-sm btn-outline-secondary" onclick="toggleTemplateLang()">
+                        <i class="fas fa-language me-2"></i>عربي
+                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
             </div>
             <div class="modal-body">
                 <div class="row g-4">
@@ -489,8 +520,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <i class="{{ $template->icon }} text-primary"></i>
                                         </div>
                                         <div>
-                                            <h6 class="card-title mb-1">{{ $template->name_ar }}</h6>
-                                            <div class="small text-muted">{{ $template->description_ar }}</div>
+                                            <h6 class="card-title mb-1 template-name">{{ $template->name_en }}</h6>
+                                            <div class="small text-muted template-description">{{ $template->description_en }}</div>
                                             <div class="mt-1">
                                                 <span @class([
                                                     'badge badge-sm rounded-pill',
@@ -504,9 +535,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                             </div>
                                         </div>
                                     </div>
-                                    @if(!empty($template->details_ar))
-                                        <ul class="small mb-3">
-                                            @foreach($template->details_ar as $detail)
+                                    @if(!empty($template->details_en))
+                                        <ul class="small mb-3 template-details">
+                                            @foreach($template->details_en as $detail)
                                                 <li>{{ $detail }}</li>
                                             @endforeach
                                         </ul>

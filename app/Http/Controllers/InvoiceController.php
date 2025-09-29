@@ -8,6 +8,7 @@ use App\Models\ServiceTemplate;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use App\Helpers\NumberToWordsHelper;
+use App\Helpers\CurrencyHelper;
 
 class InvoiceController extends Controller
 {
@@ -269,14 +270,51 @@ class InvoiceController extends Controller
         return redirect()->route('invoices.index')->with('success', 'Invoice deleted successfully');
     }
 
-    public function print($id)
+    public function print($id, Request $request)
     {
         $invoice = Invoice::with('items', 'customer')->findOrFail($id);
+        
+        // Get target currency from request (default to invoice currency)
+        $printCurrency = $request->get('currency', $invoice->currency);
+        
+        // Validate currency
+        if (!in_array($printCurrency, CurrencyHelper::getSupportedCurrencies())) {
+            $printCurrency = $invoice->currency;
+        }
+        
+        $originalCurrency = $invoice->currency;
+        $exchangeRate = null;
+        
+        // Convert amounts if different currency requested
+        if ($printCurrency !== $originalCurrency) {
+            $exchangeRate = CurrencyHelper::getExchangeRate($originalCurrency, $printCurrency);
+            
+            // Convert invoice totals
+            $invoice->subtotal = CurrencyHelper::convertAmount($invoice->subtotal, $originalCurrency, $printCurrency);
+            $invoice->discount_amount = CurrencyHelper::convertAmount($invoice->discount_amount, $originalCurrency, $printCurrency);
+            $invoice->vat_amount = CurrencyHelper::convertAmount($invoice->vat_amount, $originalCurrency, $printCurrency);
+            $invoice->total = CurrencyHelper::convertAmount($invoice->total, $originalCurrency, $printCurrency);
+            
+            // Convert invoice items
+            foreach ($invoice->items as $item) {
+                $item->unit_price = CurrencyHelper::convertAmount($item->unit_price, $originalCurrency, $printCurrency);
+                $item->total = CurrencyHelper::convertAmount($item->total, $originalCurrency, $printCurrency);
+            }
+            
+            // Update currency for display
+            $invoice->currency = $printCurrency;
+        }
 
         // Convert amount to words with currency
-        $amountInWords = NumberToWordsHelper::convertToArabicWords($invoice->total_amount, $invoice->currency);
+        $amountInWords = NumberToWordsHelper::convertToArabicWords($invoice->total, $printCurrency);
 
-        // Pass amount in words to the view
-        return view('invoices.print', compact('invoice', 'amountInWords'));
+        // Pass data to view
+        return view('invoices.print', compact(
+            'invoice', 
+            'amountInWords', 
+            'printCurrency', 
+            'originalCurrency', 
+            'exchangeRate'
+        ));
     }
 }

@@ -4,13 +4,29 @@
 <div class="container py-4">
     <!-- Action Buttons -->
     <div class="d-flex justify-content-end gap-2 mb-4">
-        <x-action-button 
-            href="{{ route('invoices.print', $invoice->id) }}"
-            icon="print"
-            target="_blank"
-        >
-            Print
-        </x-action-button>
+        <!-- Print Dropdown -->
+        <div class="dropdown">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-print me-1"></i> Print
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ route('invoices.print', $invoice->id) }}" target="_blank">
+                    <i class="fas fa-file-pdf me-2"></i>Print in {{ $invoice->currency }}
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><h6 class="dropdown-header">Print in Other Currency</h6></li>
+                @php
+                    $currencies = ['USD' => 'US Dollar ($)', 'SAR' => 'Saudi Riyal (ر.س)', 'EGP' => 'Egyptian Pound (ج.م)', 'AUD' => 'Australian Dollar (A$)'];
+                @endphp
+                @foreach($currencies as $code => $name)
+                    @if($code !== $invoice->currency)
+                        <li><a class="dropdown-item" href="{{ route('invoices.print', ['invoice' => $invoice->id, 'currency' => $code]) }}" target="_blank">
+                            <i class="fas fa-exchange-alt me-2"></i>{{ $name }}
+                        </a></li>
+                    @endif
+                @endforeach
+            </ul>
+        </div>
 
         <x-action-button 
             href="{{ route('invoices.edit', $invoice->id) }}"
